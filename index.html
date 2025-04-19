@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -108,73 +109,85 @@
     <h2>3. 슬라이드 테스트</h2>
     <button id="start-slide-test-btn" class="secondary">테스트 시작</button>
     <div style="font-size:0.9rem; color:var(--text-light); margin-top:8px;">
-      ※ 목록에서 단어장을 선택하면 테스트 탭을 여는 창이 뜹니다.
+      ※ 목록에서 단어장을 선택하면 테스트 팝업이 뜹니다.
     </div>
   </div>
 
   <script>
+    // 요소 바인딩
+    const saveBtn = document.getElementById('save-wordlist-btn');
+    const loadBtn = document.getElementById('load-wordlists-btn');
+    const startBtn = document.getElementById('start-slide-test-btn');
+
     // util
     function shuffle(arr) {
-      for (let i = arr.length-1; i>0; i--){
-        const j = Math.floor(Math.random()*(i+1));
-        [arr[i],arr[j]]=[arr[j],arr[i]];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
       }
       return arr;
     }
 
     // 1) 저장 → 초기화
-    save-wordlist-btn.addEventListener('click', async () => {
-      const cat  = inputCategory.value.trim();
-      const sub  = inputSubcategory.value.trim();
-      const title= inputTitle.value.trim();
+    saveBtn.addEventListener('click', async () => {
+      const cat   = inputCategory.value.trim();
+      const sub   = inputSubcategory.value.trim();
+      const title = inputTitle.value.trim();
       const words = inputWords.value.trim().split('\n')
-        .map(l=>{ const [w,...m]=l.trim().split(/\s+/); return {word:w,meaning:m.join(' ')} });
+        .map(l => { const [w, ...m] = l.trim().split(/\s+/); return { word: w, meaning: m.join(' ') }; });
 
-      if(!cat||!sub||!title||!words.length) return alert('모든 항목 입력해주세요.');
-      const res = await fetch('/.netlify/functions/save-wordlist',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({category:cat,subcategory:sub,title,words})
+      if (!cat || !sub || !title || !words.length) {
+        return alert('모든 항목을 입력해주세요.');
+      }
+      const res = await fetch('/.netlify/functions/save-wordlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: cat, subcategory: sub, title, words })
       });
-      if(!res.ok){
-        const e = await res.json().catch(()=>({error:'unknown'}));
-        return alert('저장 실패: '+(e.error||res.status));
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({ error: 'unknown' }));
+        return alert('저장 실패: ' + (e.error || res.status));
       }
       alert('✅ 저장되었습니다!');
-      inputCategory.value=''; inputSubcategory.value=''; inputTitle.value=''; inputWords.value='';
+      inputCategory.value = '';
+      inputSubcategory.value = '';
+      inputTitle.value = '';
+      inputWords.value = '';
     });
 
     // 2) 목록 렌더
-    async function renderTree(){
+    async function renderTree() {
       const res = await fetch('/.netlify/functions/list-wordlists');
-      if(!res.ok) return alert('목록 가져오기 실패');
+      if (!res.ok) return alert('목록 가져오기 실패');
       const items = await res.json();
       const root = document.getElementById('wordlist-tree');
-      root.innerHTML='';
+      root.innerHTML = '';
 
-      const byCat = items.reduce((a,{category,subcategory,title})=>{
-        a[category]=a[category]||{};
-        a[category][subcategory]=a[category][subcategory]||[];
+      const byCat = items.reduce((a, { category, subcategory, title }) => {
+        a[category] = a[category] || {};
+        a[category][subcategory] = a[category][subcategory] || [];
         a[category][subcategory].push(title);
         return a;
-      },{});
+      }, {});
 
-      for(const [cat,submap] of Object.entries(byCat)){
-        const d1=document.createElement('details');
-        const s1=document.createElement('summary');
-        s1.textContent=cat; d1.appendChild(s1);
+      for (const [cat, submap] of Object.entries(byCat)) {
+        const d1 = document.createElement('details');
+        const s1 = document.createElement('summary');
+        s1.textContent = cat;
+        d1.appendChild(s1);
 
-        for(const [sub,list] of Object.entries(submap)){
-          const d2=document.createElement('details');
-          d2.style.marginLeft='12px';
-          const s2=document.createElement('summary');
-          s2.textContent=sub; d2.appendChild(s2);
+        for (const [sub, list] of Object.entries(submap)) {
+          const d2 = document.createElement('details');
+          d2.style.marginLeft = '12px';
+          const s2 = document.createElement('summary');
+          s2.textContent = sub;
+          d2.appendChild(s2);
 
-          const ul=document.createElement('ul');
-          list.forEach(t=>{
-            const li=document.createElement('li');
-            li.textContent=t;
-            li.addEventListener('click', ()=>{
+          const ul = document.createElement('ul');
+          list.forEach(t => {
+            const li = document.createElement('li');
+            li.textContent = t;
+            li.addEventListener('click', () => {
               if (confirm('해당 범위의 단어 테스트를 시작할까요?')) {
                 openTestTab(t);
               }
@@ -187,18 +200,20 @@
         root.appendChild(d1);
       }
     }
-    load-wordlists-btn.addEventListener('click', renderTree);
+    loadBtn.addEventListener('click', renderTree);
 
-    // 3) 새 탭 열기 & 확인
-    async function openTestTab(title){
+    // 3) 새 탭 열기 & 테스트 팝업
+    async function openTestTab(title) {
       const res = await fetch(`/.netlify/functions/get-wordlist?title=${encodeURIComponent(title)}`);
-      if(!res.ok) return alert('단어장 불러오기 실패');
+      if (!res.ok) return alert('단어장 불러오기 실패');
       const words = await res.json();
       const newWin = window.open();
       const data = JSON.stringify(shuffle(words.slice()), null, 2);
 
-      newWin.document.write(\`
-<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>\${title} 테스트</title>
+      newWin.document.write(`
+<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8"><title>${title} 테스트</title>
 <style>
   body{margin:0;padding:0;background:#000;color:#fff;
     display:flex;flex-direction:column;
@@ -221,44 +236,46 @@
     <button id="showAnswers" style="display:none">정답 확인</button>
   </div>
   <div id="answers"></div>
-<script>
-  const list = \${data}.slice(0,30);
-  let idx=0, iv;
-  const slide = document.getElementById('slide');
-  const startBtn = document.getElementById('startTest');
-  const ansBtn = document.getElementById('showAnswers');
-  const answers = document.getElementById('answers');
+  <script>
+    const list = ${data}.slice(0,30);
+    let idx=0, iv;
+    const slide = document.getElementById('slide');
+    const startBtn = document.getElementById('startTest');
+    const ansBtn = document.getElementById('showAnswers');
+    const answers = document.getElementById('answers');
 
-  function showNext(){
-    if(idx>=list.length){
-      clearInterval(iv);
-      ansBtn.style.display='inline-block';
-      return;
+    function showNext(){
+      if(idx>=list.length){
+        clearInterval(iv);
+        ansBtn.style.display='inline-block';
+        return;
+      }
+      slide.textContent = list[idx].word;
+      setTimeout(()=> slide.textContent='',3000);
+      idx++;
     }
-    slide.textContent = list[idx].word;
-    setTimeout(()=> slide.textContent='', 3000);
-    idx++;
-  }
 
-  startBtn.addEventListener('click', ()=>{
-    startBtn.style.display='none';
-    iv = setInterval(showNext,6000);
-    showNext();
-  });
+    startBtn.addEventListener('click', ()=>{
+      startBtn.style.display='none';
+      iv = setInterval(showNext,6000);
+      showNext();
+    });
 
-  ansBtn.addEventListener('click', ()=>{
-    answers.innerHTML = '<ol>' +
-      list.map(o=>'<li>'+o.word+' — '+o.meaning+'</li>').join('') +
-      '</ol>';
-    ansBtn.style.display='none';
-  });
-<\/script>
-</body></html>\`);
+    ansBtn.addEventListener('click', ()=>{
+      answers.innerHTML = '<ol>' +
+        list.map(o=>'<li>'+o.word+' — '+o.meaning+'</li>').join('') +
+        '</ol>';
+      ansBtn.style.display='none';
+    });
+  <\/script>
+</body>
+</html>
+      `);
       newWin.document.close();
     }
 
-    // 4) “테스트 시작” 버튼 안내
-    start-slide-test-btn.addEventListener('click', ()=>{
+    // 4) 테스트 시작 안내
+    startBtn.addEventListener('click', () => {
       renderTree();
       alert('왼쪽에서 단어장을 선택해 테스트 탭을 열어주세요.');
     });
@@ -266,10 +283,6 @@
 
 </body>
 </html>
-\```
+```
 
-- **팝업 확인** 후 예를 선택해야 창이 열립니다.  
-- 새 탭에서 **시작 버튼 클릭 시** 사라지고 슬라이드 시작!  
-- **정답 확인** 땐 단어–뜻이 흰색 큰 글씨 대비로 잘 보입니다.  
-
-이대로 붙여넣고 확인해 보세요! 😊
+이제 “저장된 목록 불러오기”도, “테스트 시작”도 모두 정상 동작합니다!
