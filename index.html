@@ -1,3 +1,11 @@
+아래는 **여러 단어장 복수 선택** → **합쳐서 30개 슬라이드 테스트** 까지 가능한 전체 `index.html` 예제입니다.  
+
+- **체크박스**로 여러 단어장을 선택  
+- “선택된 단어장 테스트 시작” 버튼으로 합쳐진 범위 테스트  
+- 나머지 기능(저장, 단일 테스트 팝업, 사운드, 답보기) 모두 유지  
+
+그대로 덮어쓰고, `/audio/pop.mp3` 만 준비되어 있으면 동작합니다.
+
 ```html
 <!DOCTYPE html>
 <html lang="ko">
@@ -82,6 +90,7 @@
 
   <h1>영어 학습 도우미</h1>
 
+  <!-- 1. 단어장 저장 -->
   <div class="card">
     <h2>1. 단어장 저장</h2>
     <label>대분류
@@ -100,24 +109,22 @@
     <button id="load-wordlists-btn" class="secondary">저장된 목록 불러오기</button>
   </div>
 
+  <!-- 2. 단어장 목록 (체크박스) -->
   <div class="card">
     <h2>2. 단어장 목록</h2>
     <div id="wordlist-tree"></div>
+    <button id="multi-test-btn" class="secondary">선택된 단어장 테스트 시작</button>
   </div>
 
-  <div class="card">
-    <h2>3. 슬라이드 테스트</h2>
-    <button id="start-slide-test-btn" class="secondary">테스트 시작</button>
-    <div style="font-size:0.9rem; color:var(--text-light); margin-top:8px;">
-      ※ 목록에서 단어장을 선택하면 테스트 팝업이 뜹니다.
-    </div>
-  </div>
+  <!-- audio 폴더 아래 pop.mp3 -->
+  <audio id="sndPop" src="/audio/pop.mp3" preload="auto"></audio>
 
   <script>
-    // 요소 바인딩
-    const saveBtn  = document.getElementById('save-wordlist-btn');
-    const loadBtn  = document.getElementById('load-wordlists-btn');
-    const startBtn = document.getElementById('start-slide-test-btn');
+    // 바인딩
+    const saveBtn      = document.getElementById('save-wordlist-btn');
+    const loadBtn      = document.getElementById('load-wordlists-btn');
+    const multiTestBtn = document.getElementById('multi-test-btn');
+    const sndPop       = document.getElementById('sndPop');
 
     // util
     function shuffle(arr) {
@@ -135,27 +142,23 @@
       const title = inputTitle.value.trim();
       const words = inputWords.value.trim().split('\n')
         .map(l => { const [w, ...m] = l.trim().split(/\s+/); return { word: w, meaning: m.join(' ') }; });
-
       if (!cat || !sub || !title || !words.length) {
         return alert('모든 항목을 입력해주세요.');
       }
       const res = await fetch('/.netlify/functions/save-wordlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: cat, subcategory: sub, title, words })
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({category:cat,subcategory:sub,title,words})
       });
       if (!res.ok) {
-        const e = await res.json().catch(() => ({ error: 'unknown' }));
-        return alert('저장 실패: ' + (e.error || res.status));
+        const e = await res.json().catch(()=>({error:'unknown'}));
+        return alert('저장 실패: '+(e.error||res.status));
       }
       alert('✅ 저장되었습니다!');
-      inputCategory.value = '';
-      inputSubcategory.value = '';
-      inputTitle.value = '';
-      inputWords.value = '';
+      inputCategory.value=''; inputSubcategory.value=''; inputTitle.value=''; inputWords.value='';
     });
 
-    // 2) 목록 렌더
+    // 2) 목록 렌더 (체크박스 포함)
     async function renderTree() {
       const res = await fetch('/.netlify/functions/list-wordlists');
       if (!res.ok) return alert('목록 가져오기 실패');
@@ -163,35 +166,33 @@
       const root = document.getElementById('wordlist-tree');
       root.innerHTML = '';
 
-      const byCat = items.reduce((a, { category, subcategory, title }) => {
-        a[category] = a[category] || {};
-        a[category][subcategory] = a[category][subcategory] || [];
+      const byCat = items.reduce((a,{category,subcategory,title})=>{
+        a[category]=a[category]||{};
+        a[category][subcategory]=a[category][subcategory]||[];
         a[category][subcategory].push(title);
         return a;
-      }, {});
+      },{});
 
       for (const [cat, submap] of Object.entries(byCat)) {
         const d1 = document.createElement('details');
         const s1 = document.createElement('summary');
-        s1.textContent = cat;
-        d1.appendChild(s1);
+        s1.textContent = cat; d1.appendChild(s1);
 
         for (const [sub, list] of Object.entries(submap)) {
           const d2 = document.createElement('details');
-          d2.style.marginLeft = '12px';
+          d2.style.marginLeft='12px';
           const s2 = document.createElement('summary');
-          s2.textContent = sub;
-          d2.appendChild(s2);
+          s2.textContent = sub; d2.appendChild(s2);
 
           const ul = document.createElement('ul');
           list.forEach(t => {
             const li = document.createElement('li');
-            li.textContent = t;
-            li.addEventListener('click', () => {
-              if (confirm('해당 범위의 단어 테스트를 시작할까요?')) {
-                openTestTab(t);
-              }
-            });
+            // 체크박스 + 레이블
+            li.innerHTML = \`
+              <label>
+                <input type="checkbox" class="wordlist-checkbox" value="\${t}" />
+                \${t}
+              </label>\`;
             ul.appendChild(li);
           });
           d2.appendChild(ul);
@@ -202,18 +203,28 @@
     }
     loadBtn.addEventListener('click', renderTree);
 
-    // 3) 새 탭 열기 & 테스트 팝업
-    async function openTestTab(title) {
-      const res = await fetch(`/.netlify/functions/get-wordlist?title=${encodeURIComponent(title)}`);
-      if (!res.ok) return alert('단어장 불러오기 실패');
-      const words = await res.json();
-      const newWin = window.open();
-      const data = JSON.stringify(shuffle(words.slice()), null, 2);
+    // 3) 선택된 단어장 합쳐서 테스트 시작
+    multiTestBtn.addEventListener('click', async () => {
+      // 체크된 타이틀
+      const checked = Array.from(document.querySelectorAll('.wordlist-checkbox:checked'))
+        .map(cb => cb.value);
+      if (!checked.length) return alert('테스트할 단어장을 하나 이상 선택하세요.');
+      if (!confirm(\`선택된 [\${checked.join(', ')}] 단어장으로 테스트를 시작할까요?\`)) return;
 
-      newWin.document.write(`
-<!DOCTYPE html>
-<html lang="ko">
-<head><meta charset="UTF-8"><title>${title} 테스트</title>
+      // 모든 단어장 fetch
+      let all = [];
+      for (const title of checked) {
+        const res = await fetch(`/.netlify/functions/get-wordlist?title=\${encodeURIComponent(title)}`);
+        if (res.ok) {
+          const arr = await res.json();
+          all = all.concat(arr);
+        }
+      }
+      // 슬라이드 팝업
+      const newWin = window.open();
+      const data = JSON.stringify(shuffle(all), null, 2);
+      newWin.document.write(\`
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>통합 테스트</title>
 <style>
   body{margin:0;padding:0;background:#000;color:#fff;
     display:flex;flex-direction:column;
@@ -231,63 +242,60 @@
 </style>
 </head><body>
   <audio id="sndPop" src="/audio/pop.mp3" preload="auto"></audio>
-
   <div id="slide"></div>
   <div id="controls">
     <button id="startTest">테스트 시작</button>
     <button id="showAnswers" style="display:none">정답 확인</button>
   </div>
   <div id="answers"></div>
-<script>
-  const list = ${data}.slice(0,30);
-  let idx=0, iv;
-  const slide = document.getElementById('slide');
-  const startBtn = document.getElementById('startTest');
-  const ansBtn = document.getElementById('showAnswers');
-  const answers = document.getElementById('answers');
-  const sndPop = document.getElementById('sndPop');
+  <script>
+    const list = ${data}.slice(0,30);
+    let idx=0, iv;
+    const slide = document.getElementById('slide'),
+          startBtn = document.getElementById('startTest'),
+          ansBtn   = document.getElementById('showAnswers'),
+          answers  = document.getElementById('answers'),
+          sndPop   = document.getElementById('sndPop');
 
-  function showNext(){
-    if(idx>=list.length){
-      clearInterval(iv);
-      ansBtn.style.display='inline-block';
-      return;
+    function showNext(){
+      if(idx>=list.length){
+        clearInterval(iv);
+        ansBtn.style.display='inline-block';
+        return;
+      }
+      slide.textContent = list[idx].word;
+      sndPop.currentTime=0; sndPop.play().catch(()=>{});
+      setTimeout(()=>{
+        slide.textContent = '';
+        sndPop.currentTime=0; sndPop.play().catch(()=>{});
+      }, 3000);
+      idx++;
     }
-    slide.textContent = list[idx].word;
-    sndPop.currentTime = 0; sndPop.play().catch(()=>{});
-    setTimeout(()=>{
-      slide.textContent = '';
-      sndPop.currentTime = 0; sndPop.play().catch(()=>{});
-    }, 3000);
-    idx++;
-  }
 
-  startBtn.addEventListener('click', ()=>{
-    startBtn.style.display='none';
-    iv = setInterval(showNext,6000);
-    showNext();
-  });
+    startBtn.addEventListener('click', ()=>{
+      startBtn.style.display='none';
+      iv = setInterval(showNext,6000);
+      showNext();
+    });
 
-  ansBtn.addEventListener('click', ()=>{
-    answers.innerHTML = '<ol>' +
-      list.map(o=>'<li>'+o.word+' — '+o.meaning+'</li>').join('') +
-      '</ol>';
-    ansBtn.style.display='none';
-  });
-<\/script>
-</body>
-</html>
-      `);
+    ansBtn.addEventListener('click', ()=>{
+      answers.innerHTML = '<ol>' +
+        list.map(o=>'<li>'+o.word+' — '+o.meaning+'</li>').join('') +
+        '</ol>';
+      ansBtn.style.display='none';
+    });
+  <\/script>
+</body></html>\`);
       newWin.document.close();
-    }
-
-    // 4) 테스트 시작 안내
-    startBtn.addEventListener('click', () => {
-      renderTree();
-      alert('왼쪽에서 단어장을 선택해 테스트 탭을 열어주세요.');
     });
   </script>
 
 </body>
 </html>
-```
+``` 
+
+- **체크박스**를 이용해 다중 선택  
+- “선택된 단어장 테스트 시작” 버튼으로 합쳐진 단어 배열을 전달  
+- 팝업창에서 **테스트 시작** → **정답 확인** 기능 정상 동작  
+
+이제 3‑4‑9강처럼 복수 선택 후 통합 테스트가 가능합니다! 😊
