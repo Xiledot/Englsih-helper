@@ -3,172 +3,270 @@
 <head>
   <meta charset="UTF-8" />
   <title>영어 학습 도우미</title>
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 900px; margin: auto; background: #f9f9f9; }
-    h1, h2 { text-align: center; color: #333; }
-    #navigation { text-align: center; margin-bottom: 20px; }
-    #navigation button { padding: 10px 15px; margin: 0 5px; cursor: pointer; }
-    .feature-section { display: none; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .feature-section.active { display: block; }
-    input, textarea { width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box; }
-    button { padding: 10px 20px; margin-right: 5px; cursor: pointer; }
-    #wordlist-tree { margin-top: 15px; }
-    #wordlist-tree h3 { margin: 0.5em 0; cursor: pointer; }
-    #wordlist-tree ul { list-style: none; padding-left: 1em; }
-    #wordlist-tree li { margin: 0.3em 0; cursor: pointer; }
-    #slide-area { margin-top:20px; font-size: 2em; text-align: center; height: 3em; }
+    :root {
+      --primary: #3498db;
+      --primary-dark: #2980b9;
+      --secondary: #2ecc71;
+      --bg-page: #f4f7fa;
+      --bg-card: #ffffff;
+      --text: #333333;
+      --text-light: #666666;
+      --border-radius: 8px;
+      --transition: 0.2s ease;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-page);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 20px;
+    }
+    h1 { text-align: center; font-weight: 600; margin-bottom: 20px; }
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--border-radius);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      margin-bottom: 16px;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      transition: border-color var(--transition);
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    button {
+      display: inline-block;
+      padding: 10px 16px;
+      margin-right: 8px;
+      margin-bottom: 16px;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #fff;
+      background: var(--primary);
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+    button.secondary {
+      background: var(--secondary);
+    }
+    button:hover {
+      background: var(--primary-dark);
+    }
+    button.secondary:hover {
+      background: #27ae60;
+    }
+    #wordlist-tree details {
+      margin-bottom: 8px;
+      border: 1px solid #eee;
+      border-radius: var(--border-radius);
+      padding: 8px 12px;
+      background: #fafafa;
+    }
+    #wordlist-tree summary {
+      font-weight: 600;
+      cursor: pointer;
+      list-style: none;
+    }
+    #wordlist-tree summary::-webkit-details-marker { display: none; }
+    #wordlist-tree summary::before {
+      content: '▸';
+      display: inline-block;
+      margin-right: 6px;
+      transition: transform var(--transition);
+    }
+    #wordlist-tree details[open] summary::before {
+      transform: rotate(90deg);
+    }
+    #wordlist-tree ul {
+      list-style: none;
+      margin-left: 16px;
+      margin-top: 8px;
+    }
+    #wordlist-tree li {
+      padding: 4px 0;
+      cursor: pointer;
+      color: var(--text-light);
+      transition: color var(--transition);
+    }
+    #wordlist-tree li:hover {
+      color: var(--text);
+    }
+    #slide-area {
+      margin-top: 20px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: var(--primary);
+      background: #fff;
+      border: 2px solid var(--primary);
+      border-radius: var(--border-radius);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
   </style>
 </head>
 <body>
 
   <h1>영어 학습 도우미</h1>
-  <div id="navigation">
-    <button id="btn-word-test" class="active">단어 테스트</button>
+
+  <div class="card">
+    <h2>1. 단어장 저장</h2>
+    <label>대분류 (예: 교과서, 모의고사)
+      <input id="inputCategory" placeholder="교과서" />
+    </label>
+    <label>중분류 (예: 올림포스 1강)
+      <input id="inputSubcategory" placeholder="올림포스 1강" />
+    </label>
+    <label>단어장 제목 (예: 올림포스1)
+      <input id="inputTitle" placeholder="올림포스1" />
+    </label>
+    <label>단어·뜻 입력 (예: importance 중요성)
+      <textarea id="inputWords" rows="5"></textarea>
+    </label>
+    <button id="save-wordlist-btn">저장하기</button>
+    <button id="load-wordlists-btn" class="secondary">저장된 목록 불러오기</button>
   </div>
 
-  <!-- 단어 테스트 섹션 -->
-  <div id="word-test-section" class="feature-section active">
-    <h2>단어장 저장 &amp; 목록</h2>
-    <input id="inputCategory"    placeholder="대분류 입력 (예: 교과서, 모의고사)" />
-    <input id="inputSubcategory" placeholder="중분류 입력 (예: 올림포스 1강)" />
-    <input id="inputTitle"       placeholder="단어장 제목 입력 (예: 올림포스1)" />
-    <textarea id="inputWords" rows="6" placeholder="단어·뜻을 한 줄에 하나씩, 띄어쓰기로 구분하여 입력하세요&#10;예) importance 중요성&#10;prominence 두드러짐"></textarea>
-    <button id="save-wordlist-btn">단어장 저장</button>
-    <button id="load-wordlists-btn">저장된 목록 불러오기</button>
-
+  <div class="card">
+    <h2>2. 단어장 목록</h2>
     <div id="wordlist-tree"></div>
+  </div>
 
-    <h2 style="margin-top:40px;">슬라이드 테스트</h2>
-    <button id="start-slide-test-btn">테스트 시작</button>
-    <div id="slide-area"></div>
+  <div class="card">
+    <h2>3. 슬라이드 테스트</h2>
+    <button id="start-slide-test-btn" class="secondary">테스트 시작</button>
+    <div id="slide-area">여기에 단어가 표시됩니다</div>
   </div>
 
   <script>
-    // ----------------------
-    // Helpers
-    function shuffleArray(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+    // utils
+    function shuffle(arr) {
+      for (let i = arr.length-1; i>0; i--) {
+        const j = Math.floor(Math.random()*(i+1));
         [arr[i], arr[j]] = [arr[j], arr[i]];
       }
       return arr;
     }
 
-    // ----------------------
-    // 저장: save-wordlist
+    // 1) 저장
     document.getElementById('save-wordlist-btn').addEventListener('click', async () => {
       const category    = document.getElementById('inputCategory').value.trim();
       const subcategory = document.getElementById('inputSubcategory').value.trim();
       const title       = document.getElementById('inputTitle').value.trim();
-      const lines       = document.getElementById('inputWords').value.trim().split('\n');
-      const words       = lines.map(l => {
-        const [word, ...rest] = l.trim().split(/\s+/);
-        return { word, meaning: rest.join(' ') };
-      });
+      const words = document.getElementById('inputWords').value
+        .trim().split('\n')
+        .map(l => {
+          const [w, ...m] = l.trim().split(/\s+/);
+          return { word: w, meaning: m.join(' ') };
+        });
 
-      if (!category || !subcategory || !title || words.length === 0) {
-        return alert('모든 필드를 올바르게 입력하세요.');
+      if (!category||!subcategory||!title||!words.length) {
+        return alert('모든 항목을 올바르게 입력해주세요.');
       }
-
-      const resp = await fetch('/.netlify/functions/save-wordlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch('/.netlify/functions/save-wordlist', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
         body: JSON.stringify({ category, subcategory, title, words })
       });
-      if (!resp.ok) {
-        const err = await resp.json().catch(()=>({error:'unknown'}));
-        return alert('저장 실패: ' + (err.error||resp.status));
+      if (!res.ok) {
+        const err = await res.json().catch(()=>({error:'unknown'}));
+        return alert('저장 실패: '+(err.error||res.status));
       }
-      alert('저장되었습니다!');
+      alert('✅ 저장되었습니다!');
     });
 
-    // ----------------------
-    // 불러오기 목록: 트리 렌더링
-    async function renderWordlistTree() {
-      const resp = await fetch('/.netlify/functions/list-wordlists');
-      if (!resp.ok) {
-        return alert('목록 불러오기 실패');
-      }
-      const items = await resp.json(); 
-      // items: [{category, subcategory, title}, …]
-
-      const treeEl = document.getElementById('wordlist-tree');
-      treeEl.innerHTML = '';
+    // 2) 목록 불러와 트리 렌더
+    async function renderTree() {
+      const res = await fetch('/.netlify/functions/list-wordlists');
+      if (!res.ok) return alert('목록 불러오기 실패');
+      const items = await res.json();
+      const root = document.getElementById('wordlist-tree');
+      root.innerHTML = '';
 
       // 그룹핑
-      const byCat = items.reduce((acc, {category, subcategory, title}) => {
-        acc[category] = acc[category] || {};
-        acc[category][subcategory] = acc[category][subcategory] || [];
-        acc[category][subcategory].push(title);
-        return acc;
+      const byCat = items.reduce((a,{category,subcategory,title})=>{
+        a[category] = a[category]||{};
+        a[category][subcategory] = a[category][subcategory]||[];
+        a[category][subcategory].push(title);
+        return a;
       }, {});
 
-      // 트리 생성
-      Object.entries(byCat).forEach(([cat, subMap]) => {
-        const h3 = document.createElement('h3');
-        h3.textContent = cat;
-        treeEl.appendChild(h3);
+      Object.entries(byCat).forEach(([cat,submap])=>{
+        const d1 = document.createElement('details');
+        const s1 = document.createElement('summary');
+        s1.textContent = cat;
+        d1.appendChild(s1);
 
-        const ul = document.createElement('ul');
-        Object.entries(subMap).forEach(([sub, titles]) => {
-          const liSub = document.createElement('li');
-          liSub.textContent = sub;
-          const inner = document.createElement('ul');
-          titles.forEach(t => {
-            const liTitle = document.createElement('li');
-            liTitle.textContent = t;
-            liTitle.addEventListener('click', () => applyWordlist(t));
-            inner.appendChild(liTitle);
+        Object.entries(submap).forEach(([sub,list])=>{
+          const d2 = document.createElement('details');
+          d2.style.marginLeft = '12px';
+          const s2 = document.createElement('summary');
+          s2.textContent = sub;
+          d2.appendChild(s2);
+
+          const ul = document.createElement('ul');
+          list.forEach(t=>{
+            const li = document.createElement('li');
+            li.textContent = t;
+            li.style.marginLeft = '16px';
+            li.addEventListener('click', ()=>applyList(t));
+            ul.appendChild(li);
           });
-          liSub.appendChild(inner);
-          ul.appendChild(liSub);
+          d2.appendChild(ul);
+          d1.appendChild(d2);
         });
-        treeEl.appendChild(ul);
+        root.appendChild(d1);
       });
     }
-    document.getElementById('load-wordlists-btn').addEventListener('click', renderWordlistTree);
+    document.getElementById('load-wordlists-btn').addEventListener('click', renderTree);
 
-    // ----------------------
-    // 단어장 적용 → 슬라이드 시작 준비
+    // 3) 단어장 적용
     let currentWords = [];
-    async function applyWordlist(title) {
-      const resp = await fetch(`/.netlify/functions/get-wordlist?title=${encodeURIComponent(title)}`);
-      if (!resp.ok) {
-        return alert('단어장 불러오기 실패');
-      }
-      currentWords = await resp.json();  // [{word,meaning},…]
-      alert(`"${title}" 단어장 ${currentWords.length}개 불러옴`);
+    async function applyList(title) {
+      const res = await fetch(`/.netlify/functions/get-wordlist?title=${encodeURIComponent(title)}`);
+      if (!res.ok) return alert('단어장 불러오기 실패');
+      currentWords = await res.json();
+      alert(`"${title}" 단어장 (${currentWords.length}개) 불러옴`);
     }
 
-    // ----------------------
-    // 슬라이드 테스트
-    let slideInterval;
-    function startSlideTest() {
-      if (!currentWords.length) {
-        return alert('먼저 단어장을 선택해주세요.');
-      }
-      clearInterval(slideInterval);
-      const slideArea = document.getElementById('slide-area');
-      slideArea.textContent = '';
-      const list = shuffleArray(currentWords.slice()).slice(0, 30);
-
+    // 4) 슬라이드 테스트
+    let intervalId;
+    document.getElementById('start-slide-test-btn').addEventListener('click', ()=>{
+      if (!currentWords.length) return alert('단어장을 먼저 선택하세요.');
+      clearInterval(intervalId);
+      const area = document.getElementById('slide-area');
+      area.textContent = '';
+      const list = shuffle(currentWords.slice()).slice(0,30);
       let idx = 0;
-      function showNext() {
-        if (idx >= list.length) {
-          clearInterval(slideInterval);
-          slideArea.textContent = '테스트 종료';
+      const show = ()=>{
+        if (idx>=list.length) {
+          clearInterval(intervalId);
+          area.textContent = '✅ 테스트 완료';
           return;
         }
-        slideArea.textContent = list[idx].word;
-        setTimeout(() => {
-          slideArea.textContent = '';
-          idx++;
-        }, 3000);
-      }
-      showNext();
-      slideInterval = setInterval(showNext, 6000);
-    }
-    document.getElementById('start-slide-test-btn').addEventListener('click', startSlideTest);
+        area.textContent = list[idx].word;
+        setTimeout(()=> area.textContent = '', 3000);
+        idx++;
+      };
+      show();
+      intervalId = setInterval(show, 6000);
+    });
   </script>
 
 </body>
