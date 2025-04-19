@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -75,6 +76,22 @@
       cursor:pointer; transition: color var(--trans);
     }
     #wordlist-tree li:hover { color: var(--text) }
+
+    /* 체크박스 및 레이블 정렬 개선 */
+    #wordlist-tree ul {
+      padding-left: 24px;
+    }
+    #wordlist-tree li {
+      margin: 6px 0;
+    }
+    #wordlist-tree li label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #wordlist-tree li input[type="checkbox"] {
+      margin: 0;
+    }
   </style>
 </head>
 <body>
@@ -109,20 +126,11 @@
 
   <script>
   document.addEventListener('DOMContentLoaded', () => {
-    // 요소 바인딩
     const saveBtn      = document.getElementById('save-wordlist-btn');
     const loadBtn      = document.getElementById('load-wordlists-btn');
     const multiTestBtn = document.getElementById('multi-test-btn');
     const sndPop       = document.getElementById('sndPop');
 
-    // 단일 fetch 함수
-    async function fetchJSON(url) {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`${url} 호출 실패 (${res.status})`);
-      return res.json();
-    }
-
-    // 배열 셔플
     function shuffle(arr) {
       for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -131,36 +139,36 @@
       return arr;
     }
 
-    // 1) 저장 → 초기화
+    async function fetchJSON(url) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`${url} 호출 실패 (${res.status})`);
+      return res.json();
+    }
+
     saveBtn.addEventListener('click', async () => {
       const cat   = inputCategory.value.trim();
       const sub   = inputSubcategory.value.trim();
       const title = inputTitle.value.trim();
       const words = inputWords.value.trim().split('\n')
         .map(l => { const [w, ...m] = l.trim().split(/\s+/); return { word: w, meaning: m.join(' ') }; });
-
-      if (!cat || !sub || !title || words.length === 0) {
+      if (!cat || !sub || !title || !words.length) {
         return alert('모든 항목을 입력해주세요.');
       }
       try {
         const res = await fetch('/.netlify/functions/save-wordlist', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
           body: JSON.stringify({category:cat,subcategory:sub,title,words})
         });
-        const body = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(body.error || res.status);
+        const body = await res.json().catch(()=>({}));
+        if (!res.ok) throw new Error(body.error||res.status);
         alert('✅ 저장되었습니다!');
-        inputCategory.value = '';
-        inputSubcategory.value = '';
-        inputTitle.value = '';
-        inputWords.value = '';
+        inputCategory.value=''; inputSubcategory.value=''; inputTitle.value=''; inputWords.value='';
       } catch (e) {
-        alert('저장 실패: ' + e.message);
+        alert('저장 실패: '+e.message);
       }
     });
 
-    // 2) 목록 렌더(체크박스)
     async function renderTree() {
       try {
         const items = await fetchJSON('/.netlify/functions/list-wordlists');
@@ -168,8 +176,8 @@
         root.innerHTML = '';
 
         const byCat = items.reduce((acc, {category, subcategory, title}) => {
-          acc[category] = acc[category] || {};
-          acc[category][subcategory] = acc[category][subcategory] || [];
+          acc[category] = acc[category]||{};
+          acc[category][subcategory] = acc[category][subcategory]||[];
           acc[category][subcategory].push(title);
           return acc;
         }, {});
@@ -182,7 +190,7 @@
 
           for (const [sub, list] of Object.entries(submap)) {
             const d2 = document.createElement('details');
-            d2.style.marginLeft = '12px';
+            d2.style.marginLeft='12px';
             const s2 = document.createElement('summary');
             s2.textContent = sub;
             d2.appendChild(s2);
@@ -203,34 +211,29 @@
           root.appendChild(d1);
         }
       } catch (e) {
-        alert('목록 불러오기 오류: ' + e.message);
+        alert('목록 불러오기 오류: '+e.message);
       }
     }
     loadBtn.addEventListener('click', renderTree);
 
-    // 3) 다중 선택 통합 테스트
     multiTestBtn.addEventListener('click', async () => {
       const checked = Array.from(document.querySelectorAll('.wordlist-checkbox:checked'))
         .map(cb => cb.value);
-      if (checked.length === 0) {
-        return alert('하나 이상 선택해주세요.');
-      }
-      if (!confirm(`선택된 [${checked.join(', ')}] 단어장으로 테스트 시작?`)) {
-        return;
-      }
+      if (!checked.length) return alert('하나 이상 선택해주세요.');
+      if (!confirm(`선택된 [${checked.join(', ')}] 단어장으로 테스트 시작?`)) return;
+
       try {
         let allWords = [];
-        for (const title of checked) {
-          const arr = await fetchJSON(`/.netlify/functions/get-wordlist?title=${encodeURIComponent(title)}`);
+        for (const t of checked) {
+          const arr = await fetchJSON(`/.netlify/functions/get-wordlist?title=${encodeURIComponent(t)}`);
           allWords = allWords.concat(arr);
         }
         openMultiTestPopup(allWords);
       } catch (e) {
-        alert('통합 테스트 오류: ' + e.message);
+        alert('통합 테스트 오류: '+e.message);
       }
     });
 
-    // 4) 테스트 팝업 열기
     function openMultiTestPopup(words) {
       const newWin = window.open();
       const data = JSON.stringify(shuffle(words), null, 2);
@@ -275,10 +278,10 @@
         return;
       }
       slide.textContent = list[idx].word;
-      sndPop.currentTime = 0; sndPop.play().catch(()=>{});
+      sndPop.currentTime=0; sndPop.play().catch(()=>{});
       setTimeout(()=>{
         slide.textContent = '';
-        sndPop.currentTime = 0; sndPop.play().catch(()=>{});
+        sndPop.currentTime=0; sndPop.play().catch(()=>{});
       },3000);
       idx++;
     }
@@ -291,7 +294,7 @@
 
     ansBtn.addEventListener('click', ()=>{
       answers.innerHTML = '<ol>' +
-        list.map(o => '<li>' + o.word + ' — ' + o.meaning + '</li>').join('') +
+        list.map(o => '<li>'+o.word+' — '+o.meaning+'</li>').join('') +
         '</ol>';
       ansBtn.style.display='none';
     });
@@ -301,8 +304,9 @@
       newWin.document.close();
     }
 
-  }); // end DOMContentLoaded
+  }); // DOMContentLoaded end
   </script>
 
 </body>
 </html>
+```
