@@ -194,64 +194,112 @@
             .addEventListener('click', renderTree);
 
     // 3) 새 탭 열어 테스트
-    async function openTestTab(title){
-      const res = await fetch(`/.netlify/functions/get-wordlist?title=${encodeURIComponent(title)}`);
-      if(!res.ok) return alert('단어장 불러오기 실패');
-      const words = await res.json();
+    async function openTestTab(title) {
+  const res = await fetch(`/.netlify/functions/get-wordlist?title=${encodeURIComponent(title)}`);
+  if (!res.ok) return alert('단어장 불러오기 실패');
+  const words = await res.json();
+  
+  const newWin = window.open();
+  const data = JSON.stringify(shuffle(words.slice()), null, 2);
 
-      // 새 탭에 HTML 쓰기
-      const newWin = window.open();
-      const data = JSON.stringify(shuffle(words.slice()), null, 2);
-      newWin.document.write(`
+  newWin.document.write(`
 <!DOCTYPE html>
-<html lang="ko"><head>
-  <meta charset="UTF-8"><title>${title} 테스트</title>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>${title} 테스트</title>
   <style>
-    body{display:flex;flex-direction:column;align-items:center;
-      justify-content:center;height:100vh;margin:0;
-      font-family:Arial,sans-serif;background:#f4f7fa;}
-    #slide{font-size:4rem;color:${'#3498db'};height:1em;}
-    #action{margin-top:20px;}
-    button{padding:10px 20px;border:none;border-radius:8px;
-      background:#3498db;color:#fff;font-size:1rem;
-      cursor:pointer;transition:.2s;}
-    button:hover{background:#2980b9;}
-    #answers{margin-top:20px;text-align:left;font-size:1rem;}
+    body {
+      margin:0; padding:0;
+      background:#000;
+      color:#fff;
+      display:flex; flex-direction:column;
+      justify-content:center; align-items:center;
+      height:100vh;
+      font-family:Arial,sans-serif;
+    }
+    #slide {
+      font-size:6rem;
+      font-weight:600;
+      height:1.5em;
+      margin-bottom:40px;
+    }
+    #controls button {
+      padding:12px 24px;
+      margin:0 8px;
+      font-size:1.2rem;
+      border:none;
+      border-radius:8px;
+      background:#3498db;
+      color:#fff;
+      cursor:pointer;
+      transition: background 0.2s;
+    }
+    #controls button:hover {
+      background:#2980b9;
+    }
+    #answers {
+      margin-top:30px;
+      width:80%;
+      max-width:600px;
+      text-align:left;
+      font-size:1.1rem;
+      line-height:1.4;
+    }
+    #answers ol {
+      padding-left:20px;
+    }
+    #answers li {
+      margin:6px 0;
+    }
   </style>
-</head><body>
+</head>
+<body>
   <div id="slide"></div>
-  <div id="action"><button id="showAnswers" style="display:none">정답 확인</button></div>
+  <div id="controls">
+    <button id="startTest">테스트 시작</button>
+    <button id="showAnswers" style="display:none">정답 확인</button>
+  </div>
   <div id="answers"></div>
+
   <script>
     const list = ${data}.slice(0,30);
-    let idx=0;
-    const slide = document.getElementById('slide');
-    const btn = document.getElementById('showAnswers');
-    const ansDiv = document.getElementById('answers');
-    function next(){
-      if(idx>=list.length){
+    let idx = 0, iv;
+
+    const slideEl = document.getElementById('slide');
+    const startBtn = document.getElementById('startTest');
+    const ansBtn   = document.getElementById('showAnswers');
+    const answers  = document.getElementById('answers');
+
+    function showNext() {
+      if (idx >= list.length) {
         clearInterval(iv);
-        btn.style.display='inline-block';
+        ansBtn.style.display = 'inline-block';
         return;
       }
-      slide.textContent = list[idx].word;
-      setTimeout(()=> slide.textContent='', 3000);
+      slideEl.textContent = list[idx].word;
+      setTimeout(() => slideEl.textContent = '', 3000);
       idx++;
     }
-    const iv = setInterval(next,6000);
-    next();
 
-    btn.addEventListener('click', ()=>{
-      ansDiv.innerHTML = '<ol>' +
-        list.map(o=> '<li>'+ o.word +' — '+ o.meaning +'</li>').join('') +
+    startBtn.addEventListener('click', () => {
+      startBtn.disabled = true;
+      iv = setInterval(showNext, 6000);
+      showNext();
+    });
+
+    ansBtn.addEventListener('click', () => {
+      answers.innerHTML = '<ol>' +
+        list.map(o => '<li>' + o.word + ' — ' + o.meaning + '</li>').join('') +
         '</ol>';
-      btn.style.display='none';
+      ansBtn.style.display = 'none';
     });
   <\/script>
-</body></html>
-      `);
-      newWin.document.close();
-    }
+</body>
+</html>
+  `);
+  newWin.document.close();
+}
 
     // 4) 테스트 시작 버튼 (선택된 게 없으면 loadTree)
     document.getElementById('start-slide-test-btn')
