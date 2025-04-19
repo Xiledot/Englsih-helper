@@ -1,19 +1,35 @@
-const faunadb = require("faunadb");
-const q = faunadb.query;
-const client = new faunadb.Client({ secret: process.env.FAUNA_SECRET });
+// netlify/functions/list-wordlists.js
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 exports.handler = async () => {
   try {
-    const { data } = await client.query(
-      q.Map(
-        q.Paginate(q.Documents(q.Collection("wordlists"))),
-        q.Lambda("ref", q.Get(q.Var("ref")))
-      )
-    );
-    // 각 항목의 title만 반환
-    const titles = data.map(item => item.data.title);
-    return { statusCode: 200, body: JSON.stringify(titles) };
-  } catch (e) {
-    return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
+    const { data, error } = await supabase
+      .from('wordlists')
+      .select('title')
+      .order('title', { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    // data = [ { title: '올림포스1' }, { title: '테스트1' }, … ]
+    const titles = data.map((row) => row.title);
+
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify(titles),
+    };
+  } catch (err) {
+    console.error('list-wordlists error:', err);
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ error: err.message }),
+    };
   }
 };

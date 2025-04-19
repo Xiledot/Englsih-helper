@@ -1,16 +1,38 @@
-const faunadb = require("faunadb");
-const q = faunadb.query;
-const client = new faunadb.Client({ secret: process.env.FAUNA_SECRET });
+// netlify/functions/get-wordlist.js
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 exports.handler = async (event) => {
+  const title = event.queryStringParameters?.title;
+  if (!title) {
+    return { statusCode: 400, body: 'Missing title parameter' };
+  }
+
   try {
-    const title = event.queryStringParameters.title;
-    // 제목으로 검색하는 인덱스(titleByWordlists)가 있어야 합니다.
-    const result = await client.query(
-      q.Get(q.Match(q.Index("titleByWordlists"), title))
-    );
-    return { statusCode: 200, body: JSON.stringify(result.data.words) };
-  } catch (e) {
-    return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
+    const { data, error } = await supabase
+      .from('wordlists')
+      .select('words')
+      .eq('title', title)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+    // data.words = [{ word, meaning }, …]
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify(data.words),
+    };
+  } catch (err) {
+    console.error('get-wordlist error:', err);
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ error: err.message }),
+    };
   }
 };

@@ -1,49 +1,61 @@
 // netlify/functions/save-wordlist.js
-const faunadb = require('faunadb');
-const q = faunadb.query;
-const client = new faunadb.Client({
-  secret: process.env.FAUNA_SECRET,
-});
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 exports.handler = async (event) => {
-  try {
-    if (event.httpMethod !== 'POST') {
-      return { statusCode: 405, body: 'Method Not Allowed' };
-    }
-    // 1) Request body 파싱
-    const { title, words } = JSON.parse(event.body || '{}');
-    if (!title || !Array.isArray(words) || words.length === 0) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Invalid payload: title and words required' }),
-        headers: { 'Content-Type': 'application/json' },
-      };
-    }
-
-    // 2) FaunaDB에 단어장 생성
-    const result = await client.query(
-      q.Create(
-        q.Collection('wordlists'),
-        { data: { title, words } }
-      )
-    );
-
-    // 3) 성공 응답
+  // CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
-      headers: { 
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'  // CORS
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
       },
-      body: JSON.stringify({ success: true, doc: result.data }),
     };
+  }
 
-  } catch (error) {
-    console.error('save-wordlist error:', error);
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, body: 'Method Not Allowed' };
+  }
+
+  let payload;
+  try {
+    payload = JSON.parse(event.body || '{}');
+  } catch {
+    return { statusCode: 400, body: 'Invalid JSON' };
+  }
+
+  const { title, words } = payload;
+  if (!title || !Array.isArray(words) || words.length === 0) {
+    return { statusCode: 400, body: 'Invalid payload: title and words required' };
+  }
+
+  // upsert: 없으면 insert, 있으면 update
+  const { data, error } = await supabase
+    .from('wordlists')
+    .upsert([{ title, words }])
+    .select('title')
+    .single();
+
+  if (error) {
+    console.error('Supabase upsert error:', error);
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ error: error.message }),
     };
   }
+
+  return {
+    statusCode: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    },
+    body: JSON.stringify({ title: data.title }),
+  };
 };
