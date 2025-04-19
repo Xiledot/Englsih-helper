@@ -35,11 +35,20 @@ exports.handler = async (event) => {
   }
 
   // upsert: 없으면 insert, 있으면 update
-  const { data, error } = await supabase
-    .from('wordlists')
-    .upsert([{ title, words }])
-    .select('title')
-    .single();
+  if (error) {
+    console.error('Supabase upsert error:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+      status,
+    });
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ error: error.message, code: error.code }),
+    };
+  }
 
   if (error) {
     console.error('Supabase upsert error:', error);
