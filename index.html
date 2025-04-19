@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>영어 학습 도우미</title>
-  <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -11,114 +10,73 @@
       --primary-dark: #2980b9;
       --secondary: #2ecc71;
       --bg-page: #f4f7fa;
-      --bg-card: #ffffff;
-      --text: #333333;
-      --text-light: #666666;
-      --border-radius: 8px;
-      --transition: 0.2s ease;
+      --bg-card: #fff;
+      --text: #333;
+      --text-light: #666;
+      --radius: 8px;
+      --trans: 0.2s;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin:0; padding:0 }
     body {
       font-family: 'Inter', sans-serif;
       background: var(--bg-page);
       color: var(--text);
-      line-height: 1.6;
       padding: 20px;
+      line-height:1.6;
     }
-    h1 { text-align: center; font-weight: 600; margin-bottom: 20px; }
+    h1{ text-align:center; margin-bottom:20px; font-weight:600 }
     .card {
       background: var(--bg-card);
-      border-radius: var(--border-radius);
+      border-radius: var(--radius);
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      padding: 20px;
-      margin-bottom: 20px;
+      padding:20px; margin-bottom:20px;
     }
+    label { display:block; margin-bottom:12px; font-weight:500 }
     input, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 8px;
-      margin-bottom: 16px;
-      border: 1px solid #ddd;
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-      transition: border-color var(--transition);
+      width:100%; padding:10px; margin-top:6px;
+      border:1px solid #ddd; border-radius:var(--radius);
+      transition: border-color var(--trans);
     }
     input:focus, textarea:focus {
-      outline: none;
       border-color: var(--primary);
+      outline:none;
     }
     button {
-      display: inline-block;
-      padding: 10px 16px;
-      margin-right: 8px;
-      margin-bottom: 16px;
-      font-size: 1rem;
-      font-weight: 500;
-      color: #fff;
+      display:inline-block;
+      padding:10px 16px; margin:8px 8px 0 0;
+      font-size:1rem; color:#fff; border:none;
+      border-radius: var(--radius);
       background: var(--primary);
-      border: none;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      transition: background var(--transition);
+      cursor:pointer; transition: background var(--trans);
     }
-    button.secondary {
-      background: var(--secondary);
-    }
-    button:hover {
-      background: var(--primary-dark);
-    }
-    button.secondary:hover {
-      background: #27ae60;
-    }
+    button.secondary { background: var(--secondary) }
+    button:hover { background: var(--primary-dark) }
+    button.secondary:hover { background: #27ae60 }
     #wordlist-tree details {
-      margin-bottom: 8px;
-      border: 1px solid #eee;
-      border-radius: var(--border-radius);
-      padding: 8px 12px;
-      background: #fafafa;
+      margin-bottom:8px;
+      border:1px solid #eee;
+      border-radius:var(--radius);
+      padding:8px 12px;
+      background:#fafafa;
     }
     #wordlist-tree summary {
-      font-weight: 600;
-      cursor: pointer;
-      list-style: none;
+      font-weight:600; cursor:pointer; list-style:none;
     }
-    #wordlist-tree summary::-webkit-details-marker { display: none; }
+    #wordlist-tree summary::-webkit-details-marker { display:none }
     #wordlist-tree summary::before {
-      content: '▸';
-      display: inline-block;
-      margin-right: 6px;
-      transition: transform var(--transition);
+      content:'▸'; display:inline-block; margin-right:6px;
+      transition: transform var(--trans);
     }
     #wordlist-tree details[open] summary::before {
       transform: rotate(90deg);
     }
-    #wordlist-tree ul {
-      list-style: none;
-      margin-left: 16px;
-      margin-top: 8px;
-    }
     #wordlist-tree li {
-      padding: 4px 0;
-      cursor: pointer;
-      color: var(--text-light);
-      transition: color var(--transition);
+      margin:4px 0 0 16px; color: var(--text-light);
+      cursor:pointer; transition: color var(--trans);
     }
-    #wordlist-tree li:hover {
-      color: var(--text);
-    }
-    #slide-area {
-      margin-top: 20px;
-      height: 80px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      color: var(--primary);
-      background: #fff;
-      border: 2px solid var(--primary);
-      border-radius: var(--border-radius);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
+    #wordlist-tree li:hover { color: var(--text) }
+
+    /* 테스트 탭에는 필요 없지만 남겨둠 */
   </style>
 </head>
 <body>
@@ -127,17 +85,17 @@
 
   <div class="card">
     <h2>1. 단어장 저장</h2>
-    <label>대분류 (예: 교과서, 모의고사)
-      <input id="inputCategory" placeholder="교과서" />
+    <label>대분류
+      <input id="inputCategory" placeholder="교과서, 모의고사 등" />
     </label>
-    <label>중분류 (예: 올림포스 1강)
-      <input id="inputSubcategory" placeholder="올림포스 1강" />
+    <label>중분류
+      <input id="inputSubcategory" placeholder="올림포스 1강 등" />
     </label>
-    <label>단어장 제목 (예: 올림포스1)
+    <label>제목
       <input id="inputTitle" placeholder="올림포스1" />
     </label>
-    <label>단어·뜻 입력 (예: importance 중요성)
-      <textarea id="inputWords" rows="5"></textarea>
+    <label>단어·뜻 (한 줄에 “단어 뜻”)
+      <textarea id="inputWords" rows="5" placeholder="importance 중요성\nprominence 두드러짐"></textarea>
     </label>
     <button id="save-wordlist-btn">저장하기</button>
     <button id="load-wordlists-btn" class="secondary">저장된 목록 불러오기</button>
@@ -151,123 +109,158 @@
   <div class="card">
     <h2>3. 슬라이드 테스트</h2>
     <button id="start-slide-test-btn" class="secondary">테스트 시작</button>
-    <div id="slide-area">여기에 단어가 표시됩니다</div>
+    <div style="font-size:0.9rem; color:var(--text-light); margin-top:8px;">
+      ※ 테스트는 새 탭에서 열립니다.
+    </div>
   </div>
 
+
   <script>
-    // utils
+    // util
     function shuffle(arr) {
-      for (let i = arr.length-1; i>0; i--) {
+      for (let i = arr.length-1; i>0; i--){
         const j = Math.floor(Math.random()*(i+1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+        [arr[i],arr[j]]=[arr[j],arr[i]];
       }
       return arr;
     }
 
-    // 1) 저장
+    // 1) 저장 → 초기화
     document.getElementById('save-wordlist-btn').addEventListener('click', async () => {
-      const category    = document.getElementById('inputCategory').value.trim();
-      const subcategory = document.getElementById('inputSubcategory').value.trim();
-      const title       = document.getElementById('inputTitle').value.trim();
-      const words = document.getElementById('inputWords').value
-        .trim().split('\n')
-        .map(l => {
-          const [w, ...m] = l.trim().split(/\s+/);
-          return { word: w, meaning: m.join(' ') };
-        });
+      const cat  = inputCategory.value.trim();
+      const sub  = inputSubcategory.value.trim();
+      const title= inputTitle.value.trim();
+      const words = inputWords.value.trim().split('\n')
+        .map(l=>{ const [w,...m]=l.trim().split(/\s+/); return {word:w,meaning:m.join(' ')} });
 
-      if (!category||!subcategory||!title||!words.length) {
-        return alert('모든 항목을 올바르게 입력해주세요.');
-      }
-      const res = await fetch('/.netlify/functions/save-wordlist', {
+      if(!cat||!sub||!title||!words.length) return alert('모든 항목 입력해주세요.');
+      const res = await fetch('/.netlify/functions/save-wordlist',{
         method:'POST',
-        headers:{ 'Content-Type':'application/json' },
-        body: JSON.stringify({ category, subcategory, title, words })
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({category:cat,subcategory:sub,title,words})
       });
-      if (!res.ok) {
-        const err = await res.json().catch(()=>({error:'unknown'}));
-        return alert('저장 실패: '+(err.error||res.status));
+      if(!res.ok){
+        const e = await res.json().catch(()=>({error:'unknown'}));
+        return alert('저장 실패: '+(e.error||res.status));
       }
       alert('✅ 저장되었습니다!');
+      // 초기화
+      inputCategory.value='';
+      inputSubcategory.value='';
+      inputTitle.value='';
+      inputWords.value='';
     });
 
-    // 2) 목록 불러와 트리 렌더
-    async function renderTree() {
+    // 2) 목록 트리
+    async function renderTree(){
       const res = await fetch('/.netlify/functions/list-wordlists');
-      if (!res.ok) return alert('목록 불러오기 실패');
+      if(!res.ok) return alert('목록 가져오기 실패');
       const items = await res.json();
       const root = document.getElementById('wordlist-tree');
-      root.innerHTML = '';
+      root.innerHTML='';
 
-      // 그룹핑
       const byCat = items.reduce((a,{category,subcategory,title})=>{
-        a[category] = a[category]||{};
-        a[category][subcategory] = a[category][subcategory]||[];
+        a[category]=a[category]||{};
+        a[category][subcategory]=a[category][subcategory]||[];
         a[category][subcategory].push(title);
         return a;
-      }, {});
+      },{});
 
-      Object.entries(byCat).forEach(([cat,submap])=>{
-        const d1 = document.createElement('details');
-        const s1 = document.createElement('summary');
-        s1.textContent = cat;
-        d1.appendChild(s1);
+      for(const [cat,submap] of Object.entries(byCat)){
+        const d1=document.createElement('details');
+        const s1=document.createElement('summary');
+        s1.textContent=cat; d1.appendChild(s1);
 
-        Object.entries(submap).forEach(([sub,list])=>{
-          const d2 = document.createElement('details');
-          d2.style.marginLeft = '12px';
-          const s2 = document.createElement('summary');
-          s2.textContent = sub;
-          d2.appendChild(s2);
+        for(const [sub,list] of Object.entries(submap)){
+          const d2=document.createElement('details');
+          d2.style.marginLeft='12px';
+          const s2=document.createElement('summary');
+          s2.textContent=sub; d2.appendChild(s2);
 
-          const ul = document.createElement('ul');
+          const ul=document.createElement('ul');
           list.forEach(t=>{
-            const li = document.createElement('li');
-            li.textContent = t;
-            li.style.marginLeft = '16px';
-            li.addEventListener('click', ()=>applyList(t));
+            const li=document.createElement('li');
+            li.textContent=t;
+            li.addEventListener('click',()=>openTestTab(t));
             ul.appendChild(li);
           });
           d2.appendChild(ul);
           d1.appendChild(d2);
-        });
-        root.appendChild(d1);
-      });
-    }
-    document.getElementById('load-wordlists-btn').addEventListener('click', renderTree);
-
-    // 3) 단어장 적용
-    let currentWords = [];
-    async function applyList(title) {
-      const res = await fetch(`/.netlify/functions/get-wordlist?title=${encodeURIComponent(title)}`);
-      if (!res.ok) return alert('단어장 불러오기 실패');
-      currentWords = await res.json();
-      alert(`"${title}" 단어장 (${currentWords.length}개) 불러옴`);
-    }
-
-    // 4) 슬라이드 테스트
-    let intervalId;
-    document.getElementById('start-slide-test-btn').addEventListener('click', ()=>{
-      if (!currentWords.length) return alert('단어장을 먼저 선택하세요.');
-      clearInterval(intervalId);
-      const area = document.getElementById('slide-area');
-      area.textContent = '';
-      const list = shuffle(currentWords.slice()).slice(0,30);
-      let idx = 0;
-      const show = ()=>{
-        if (idx>=list.length) {
-          clearInterval(intervalId);
-          area.textContent = '✅ 테스트 완료';
-          return;
         }
-        area.textContent = list[idx].word;
-        setTimeout(()=> area.textContent = '', 3000);
-        idx++;
-      };
-      show();
-      intervalId = setInterval(show, 6000);
-    });
-  </script>
+        root.appendChild(d1);
+      }
+    }
+    document.getElementById('load-wordlists-btn')
+            .addEventListener('click', renderTree);
 
+    // 3) 새 탭 열어 테스트
+    async function openTestTab(title){
+      const res = await fetch(`/.netlify/functions/get-wordlist?title=${encodeURIComponent(title)}`);
+      if(!res.ok) return alert('단어장 불러오기 실패');
+      const words = await res.json();
+
+      // 새 탭에 HTML 쓰기
+      const newWin = window.open();
+      const data = JSON.stringify(shuffle(words.slice()), null, 2);
+      newWin.document.write(`
+<!DOCTYPE html>
+<html lang="ko"><head>
+  <meta charset="UTF-8"><title>${title} 테스트</title>
+  <style>
+    body{display:flex;flex-direction:column;align-items:center;
+      justify-content:center;height:100vh;margin:0;
+      font-family:Arial,sans-serif;background:#f4f7fa;}
+    #slide{font-size:4rem;color:${'#3498db'};height:1em;}
+    #action{margin-top:20px;}
+    button{padding:10px 20px;border:none;border-radius:8px;
+      background:#3498db;color:#fff;font-size:1rem;
+      cursor:pointer;transition:.2s;}
+    button:hover{background:#2980b9;}
+    #answers{margin-top:20px;text-align:left;font-size:1rem;}
+  </style>
+</head><body>
+  <div id="slide"></div>
+  <div id="action"><button id="showAnswers" style="display:none">정답 확인</button></div>
+  <div id="answers"></div>
+  <script>
+    const list = ${data}.slice(0,30);
+    let idx=0;
+    const slide = document.getElementById('slide');
+    const btn = document.getElementById('showAnswers');
+    const ansDiv = document.getElementById('answers');
+    function next(){
+      if(idx>=list.length){
+        clearInterval(iv);
+        btn.style.display='inline-block';
+        return;
+      }
+      slide.textContent = list[idx].word;
+      setTimeout(()=> slide.textContent='', 3000);
+      idx++;
+    }
+    const iv = setInterval(next,6000);
+    next();
+
+    btn.addEventListener('click', ()=>{
+      ansDiv.innerHTML = '<ol>' +
+        list.map(o=> '<li>'+ o.word +' — '+ o.meaning +'</li>').join('') +
+        '</ol>';
+      btn.style.display='none';
+    });
+  <\/script>
+</body></html>
+      `);
+      newWin.document.close();
+    }
+
+    // 4) 테스트 시작 버튼 (선택된 게 없으면 loadTree)
+    document.getElementById('start-slide-test-btn')
+            .addEventListener('click', ()=>{
+      // 아무것도 선택 안 했으면 목록 열어주기
+      renderTree();
+      alert('왼쪽에서 단어장을 클릭해 새 탭에서 테스트를 시작하세요');
+    });
+
+  </script>
 </body>
 </html>
