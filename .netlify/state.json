@@ -1,0 +1,20 @@
+{
+	"geolocation": {
+		"data": {
+			"city": "Bucheon-si",
+			"country": {
+				"code": "KR",
+				"name": "South Korea"
+			},
+			"subdivision": {
+				"code": "41",
+				"name": "Gyeonggi-do"
+			},
+			"timezone": "Asia/Seoul",
+			"latitude": 37.4987,
+			"longitude": 126.7828,
+			"postalCode": "14554"
+		},
+		"timestamp": 1745081349154
+	}
+}
