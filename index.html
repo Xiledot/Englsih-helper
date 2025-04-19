@@ -115,8 +115,8 @@
 
   <script>
     // 요소 바인딩
-    const saveBtn = document.getElementById('save-wordlist-btn');
-    const loadBtn = document.getElementById('load-wordlists-btn');
+    const saveBtn  = document.getElementById('save-wordlist-btn');
+    const loadBtn  = document.getElementById('load-wordlists-btn');
     const startBtn = document.getElementById('start-slide-test-btn');
 
     // util
@@ -230,44 +230,51 @@
   #answers ol{padding-left:20px;} #answers li{margin:6px 0;}
 </style>
 </head><body>
+  <audio id="sndPop" src="/audio/pop.mp3" preload="auto"></audio>
+
   <div id="slide"></div>
   <div id="controls">
     <button id="startTest">테스트 시작</button>
     <button id="showAnswers" style="display:none">정답 확인</button>
   </div>
   <div id="answers"></div>
-  <script>
-    const list = ${data}.slice(0,30);
-    let idx=0, iv;
-    const slide = document.getElementById('slide');
-    const startBtn = document.getElementById('startTest');
-    const ansBtn = document.getElementById('showAnswers');
-    const answers = document.getElementById('answers');
+<script>
+  const list = ${data}.slice(0,30);
+  let idx=0, iv;
+  const slide = document.getElementById('slide');
+  const startBtn = document.getElementById('startTest');
+  const ansBtn = document.getElementById('showAnswers');
+  const answers = document.getElementById('answers');
+  const sndPop = document.getElementById('sndPop');
 
-    function showNext(){
-      if(idx>=list.length){
-        clearInterval(iv);
-        ansBtn.style.display='inline-block';
-        return;
-      }
-      slide.textContent = list[idx].word;
-      setTimeout(()=> slide.textContent='',3000);
-      idx++;
+  function showNext(){
+    if(idx>=list.length){
+      clearInterval(iv);
+      ansBtn.style.display='inline-block';
+      return;
     }
+    slide.textContent = list[idx].word;
+    sndPop.currentTime = 0; sndPop.play().catch(()=>{});
+    setTimeout(()=>{
+      slide.textContent = '';
+      sndPop.currentTime = 0; sndPop.play().catch(()=>{});
+    }, 3000);
+    idx++;
+  }
 
-    startBtn.addEventListener('click', ()=>{
-      startBtn.style.display='none';
-      iv = setInterval(showNext,6000);
-      showNext();
-    });
+  startBtn.addEventListener('click', ()=>{
+    startBtn.style.display='none';
+    iv = setInterval(showNext,6000);
+    showNext();
+  });
 
-    ansBtn.addEventListener('click', ()=>{
-      answers.innerHTML = '<ol>' +
-        list.map(o=>'<li>'+o.word+' — '+o.meaning+'</li>').join('') +
-        '</ol>';
-      ansBtn.style.display='none';
-    });
-  <\/script>
+  ansBtn.addEventListener('click', ()=>{
+    answers.innerHTML = '<ol>' +
+      list.map(o=>'<li>'+o.word+' — '+o.meaning+'</li>').join('') +
+      '</ol>';
+    ansBtn.style.display='none';
+  });
+<\/script>
 </body>
 </html>
       `);
@@ -284,5 +291,3 @@
 </body>
 </html>
 ```
-
-이제 “저장된 목록 불러오기”도, “테스트 시작”도 모두 정상 동작합니다!
