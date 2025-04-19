@@ -9,26 +9,34 @@ exports.handler = async () => {
   try {
     const { data, error } = await supabase
       .from('wordlists')
-      .select('title')
-      .order('title', { ascending: true });
+      .select('category, subcategory, title')
+      .order('category', { ascending: true })
+      .order('subcategory', { ascending: true });
 
     if (error) {
       throw error;
     }
 
-    // data = [ { title: '올림포스1' }, { title: '테스트1' }, … ]
-    const titles = data.map((row) => row.title);
-
+    // data = [
+    //   { category: '교과서', subcategory: '올림포스 1강', title: '단어장A' },
+    //   …
+    // ]
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify(titles),
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+      body: JSON.stringify(data),
     };
   } catch (err) {
     console.error('list-wordlists error:', err);
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
       body: JSON.stringify({ error: err.message }),
     };
   }
