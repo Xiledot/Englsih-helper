@@ -53,6 +53,8 @@
     button.secondary { background: var(--secondary) }
     button:hover { background: var(--primary-dark) }
     button.secondary:hover { background: #27ae60 }
+
+    /* 트리 구조 스타일 */
     #wordlist-tree details {
       margin-bottom:8px;
       border:1px solid #eee;
@@ -61,7 +63,10 @@
       background:#fafafa;
     }
     #wordlist-tree summary {
-      font-weight:600; cursor:pointer; list-style:none;
+      font-weight:600;
+      cursor:pointer;
+      list-style:none;
+      white-space: nowrap;        /* 줄바꿈 방지 */
     }
     #wordlist-tree summary::-webkit-details-marker { display:none }
     #wordlist-tree summary::before {
@@ -71,23 +76,20 @@
     #wordlist-tree details[open] summary::before {
       transform: rotate(90deg);
     }
-    #wordlist-tree li {
-      margin:4px 0 0 16px; color: var(--text-light);
-      cursor:pointer; transition: color var(--trans);
-    }
-    #wordlist-tree li:hover { color: var(--text) }
-
-    /* 체크박스 및 레이블 정렬 개선 */
     #wordlist-tree ul {
       padding-left: 24px;
     }
     #wordlist-tree li {
       margin: 6px 0;
+      color: var(--text-light);
+      white-space: nowrap;        /* 줄바꿈 방지 */
     }
+    #wordlist-tree li:hover { color: var(--text) }
     #wordlist-tree li label {
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      white-space: nowrap;        /* 줄바꿈 방지 */
     }
     #wordlist-tree li input[type="checkbox"] {
       margin: 0;
@@ -98,6 +100,7 @@
 
   <h1>영어 학습 도우미</h1>
 
+  <!-- 1. 단어장 저장 -->
   <div class="card">
     <h2>1. 단어장 저장</h2>
     <label>대분류
@@ -116,12 +119,14 @@
     <button id="load-wordlists-btn" class="secondary">저장된 목록 불러오기</button>
   </div>
 
+  <!-- 2. 단어장 목록 -->
   <div class="card">
     <h2>2. 단어장 목록</h2>
     <div id="wordlist-tree"></div>
     <button id="multi-test-btn" class="secondary">선택된 단어장 테스트 시작</button>
   </div>
 
+  <!-- 사운드 -->
   <audio id="sndPop" src="/audio/pop.mp3" preload="auto"></audio>
 
   <script>
@@ -145,13 +150,15 @@
       return res.json();
     }
 
+    // 저장
     saveBtn.addEventListener('click', async () => {
       const cat   = inputCategory.value.trim();
       const sub   = inputSubcategory.value.trim();
       const title = inputTitle.value.trim();
       const words = inputWords.value.trim().split('\n')
         .map(l => { const [w, ...m] = l.trim().split(/\s+/); return { word: w, meaning: m.join(' ') }; });
-      if (!cat || !sub || !title || !words.length) {
+
+      if (!cat || !sub || !title || words.length === 0) {
         return alert('모든 항목을 입력해주세요.');
       }
       try {
@@ -169,6 +176,7 @@
       }
     });
 
+    // 목록 렌더
     async function renderTree() {
       try {
         const items = await fetchJSON('/.netlify/functions/list-wordlists');
@@ -216,6 +224,7 @@
     }
     loadBtn.addEventListener('click', renderTree);
 
+    // 통합 테스트
     multiTestBtn.addEventListener('click', async () => {
       const checked = Array.from(document.querySelectorAll('.wordlist-checkbox:checked'))
         .map(cb => cb.value);
@@ -234,6 +243,7 @@
       }
     });
 
+    // 팝업 열기
     function openMultiTestPopup(words) {
       const newWin = window.open();
       const data = JSON.stringify(shuffle(words), null, 2);
@@ -241,14 +251,12 @@
 <!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>통합 테스트</title>
 <style>
   body{margin:0;padding:0;background:#000;color:#fff;
-    display:flex;flex-direction:column;
-    justify-content:center;align-items:center;
-    height:100vh;font-family:Arial,sans-serif;}
+    display:flex;flex-direction:column;justify-content:center;
+    align-items:center;height:100vh;font-family:Arial,sans-serif;}
   #slide{font-size:6rem;font-weight:600;height:1.5em;margin-bottom:40px;}
-  #controls button{padding:12px 24px;margin:0 8px;
-    font-size:1.2rem;border:none;border-radius:8px;
-    background:#3498db;color:#fff;cursor:pointer;
-    transition:.2s;}
+  #controls button{padding:12px 24px;margin:0 8px;font-size:1.2rem;
+    border:none;border-radius:8px;background:#3498db;color:#fff;
+    cursor:pointer;transition:.2s;}
   #controls button:hover{background:#2980b9;}
   #answers{margin-top:30px;width:80%;max-width:600px;
     text-align:left;font-size:1.1rem;line-height:1.4;}
@@ -270,32 +278,26 @@
           ansBtn   = document.getElementById('showAnswers'),
           answers  = document.getElementById('answers'),
           sndPop   = document.getElementById('sndPop');
-
     function showNext() {
-      if (idx >= list.length) {
+      if (idx>=list.length) {
         clearInterval(iv);
-        ansBtn.style.display = 'inline-block';
+        ansBtn.style.display='inline-block';
         return;
       }
-      slide.textContent = list[idx].word;
+      slide.textContent=list[idx].word;
       sndPop.currentTime=0; sndPop.play().catch(()=>{});
       setTimeout(()=>{
-        slide.textContent = '';
-        sndPop.currentTime=0; sndPop.play().catch(()=>{});
+        slide.textContent=''; sndPop.currentTime=0; sndPop.play().catch(()=>{});
       },3000);
       idx++;
     }
-
     startBtn.addEventListener('click', ()=>{
       startBtn.style.display='none';
       iv = setInterval(showNext,6000);
       showNext();
     });
-
     ansBtn.addEventListener('click', ()=>{
-      answers.innerHTML = '<ol>' +
-        list.map(o => '<li>'+o.word+' — '+o.meaning+'</li>').join('') +
-        '</ol>';
+      answers.innerHTML = '<ol>' + list.map(o=>'<li>'+o.word+' — '+o.meaning+'</li>').join('') + '</ol>';
       ansBtn.style.display='none';
     });
   <\/script>
@@ -304,7 +306,7 @@
       newWin.document.close();
     }
 
-  }); // DOMContentLoaded end
+  }); // end DOMContentLoaded
   </script>
 
 </body>
