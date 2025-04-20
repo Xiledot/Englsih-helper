@@ -7,8 +7,8 @@
     body {
       margin: 0;
       padding: 0;
-      background: #fff;
-      color: #000;
+      background: #000;      /* 슬라이드 시 검은 배경 */
+      color: #fff;           /* 슬라이드 시 흰 글씨 */
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -37,14 +37,6 @@
     #controls button:hover {
       background: #2980b9;
     }
-    #answers {
-      margin-top: 30px;
-      width: 80%;
-      max-width: 600px;
-      text-align: left;
-      font-size: 1.1rem;
-      line-height: 1.4;
-    }
     #countdown {
       position: absolute;
       top: 20px;
@@ -61,7 +53,7 @@
       z-index: 1;
     }
 
-    /* 정답 테이블 스타일 */
+    /* 정답 확인 테이블 스타일 */
     .answer-header {
       text-align: center;
       margin-bottom: 20px;
@@ -84,6 +76,7 @@
       border: 1px solid #e91e63;
       padding: 8px;
       text-align: center;
+      color: #000;       /* 정답 테이블은 검은 글씨 */
     }
     .answer-table th {
       background: #fce4ec;
@@ -91,9 +84,17 @@
     .answer-table tr:nth-child(even) {
       background: #fff0f6;
     }
-    /* 정답 영역 기본 숨김 */
+
+    /* 정답 영역: 흰 배경, 검은 글씨, 기본 숨김 */
     #answers {
       display: none;
+      background: #fff;
+      color: #000;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 600px;
+      margin-top: 30px;
     }
   </style>
 </head>
@@ -109,15 +110,15 @@
 
   <script>
     const list = JSON.parse(localStorage.getItem('popupData') || '[]').slice(0,30);
+    const meta = JSON.parse(localStorage.getItem('popupMeta') || '{"categories":[],"subcategories":[]}');
     let idx = 0, iv;
-    const slide      = document.getElementById('slide'),
-          startBtn   = document.getElementById('startTest'),
-          ansBtn     = document.getElementById('showAnswers'),
-          answers    = document.getElementById('answers'),
-          sndPop     = document.getElementById('sndPop'),
-          countdown  = document.getElementById('countdown');
+    const slide     = document.getElementById('slide'),
+          startBtn  = document.getElementById('startTest'),
+          ansBtn    = document.getElementById('showAnswers'),
+          answers   = document.getElementById('answers'),
+          sndPop    = document.getElementById('sndPop'),
+          countdown = document.getElementById('countdown');
 
-    // 3-2-1 카운트다운 단일 실행 함수
     function runCountdown(callback) {
       let count = 3;
       countdown.textContent = count;
@@ -133,7 +134,6 @@
       }, 1000);
     }
 
-    // 슬라이드 + 이중 카운트다운
     function showNext() {
       if (idx >= list.length) {
         clearInterval(iv);
@@ -142,38 +142,30 @@
         return;
       }
       slide.textContent = list[idx].word;
-      // 첫 번째 3-2-1
       runCountdown(() => {
         slide.textContent = '';
-        sndPop.currentTime = 0;
-        sndPop.play().catch(() => {});
-        // 두 번째 3-2-1
+        sndPop.currentTime = 0; sndPop.play().catch(()=>{});
         runCountdown(() => {
-          sndPop.currentTime = 0;
-          sndPop.play().catch(() => {});
+          sndPop.currentTime = 0; sndPop.play().catch(()=>{});
         });
       });
-      sndPop.currentTime = 0;
-      sndPop.play().catch(() => {});
+      sndPop.currentTime = 0; sndPop.play().catch(()=>{});
       idx++;
     }
 
-    // 테스트 시작 버튼
     startBtn.addEventListener('click', () => {
       startBtn.style.display = 'none';
       iv = setInterval(showNext, 6000);
       showNext();
     });
 
-    // 정답 확인 버튼 → 예쁜 테이블로 출력
     ansBtn.addEventListener('click', () => {
-      // 헤더
+      // 헤더에 대/중분류 표시
       const headerHtml = `
         <div class="answer-header">
-          <h2>테스트 범위</h2>
-          <p>–</p>
+          <h2>테스트 범위: ${meta.categories.join(' / ')} / ${meta.subcategories.join(' / ')}</h2>
+          <p></p>
         </div>`;
-      // 테이블 생성
       let tableHtml = `
         <table class="answer-table">
           <thead>
@@ -185,11 +177,11 @@
             </tr>
           </thead>
           <tbody>`;
-      list.forEach((o, i) => {
+      list.forEach((o,i) => {
         tableHtml += `
             <tr>
-              <td>${i + 1}</td>
-              <td>–</td>
+              <td>${i+1}</td>
+              <td>${o.title}</td>
               <td>${o.word}</td>
               <td>${o.meaning}</td>
             </tr>`;
