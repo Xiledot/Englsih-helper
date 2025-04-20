@@ -5,26 +5,91 @@
   <title>통합 테스트</title>
   <style>
     body {
-      margin:0; padding:0; background:#000; color:#fff;
-      display:flex; flex-direction:column; justify-content:center;
-      align-items:center; height:100vh; font-family:Arial,sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      position: relative;
     }
-    #slide { font-size:6rem; font-weight:600; height:1.5em; margin-bottom:40px; }
+    #slide {
+      font-size: 6rem;
+      font-weight: 600;
+      height: 1.5em;
+      margin-bottom: 40px;
+    }
     #controls button {
-      padding:12px 24px; margin:0 8px; font-size:1.2rem;
-      border:none; border-radius:8px; background:#3498db; color:#fff;
-      cursor:pointer; transition:.2s;
+      padding: 12px 24px;
+      margin: 0 8px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 8px;
+      background: #3498db;
+      color: #fff;
+      cursor: pointer;
+      transition: .2s;
     }
-    #controls button:hover { background:#2980b9; }
-    #answers { margin-top:30px; width:80%; max-width:600px; text-align:left; font-size:1.1rem; line-height:1.4; }
-    #answers ol { padding-left:20px; }
-    /* 카운트다운 원형 */
+    #controls button:hover {
+      background: #2980b9;
+    }
+    #answers {
+      margin-top: 30px;
+      width: 80%;
+      max-width: 600px;
+      text-align: left;
+      font-size: 1.1rem;
+      line-height: 1.4;
+    }
     #countdown {
-      position: absolute; top:20px; left:20px;
-      width:75px; height:75px;
-      border:3px solid #fff; border-radius:50%;
-      display:none; align-items:center; justify-content:center;
-      font-size:1rem; color:#fff; z-index:1;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 75px;
+      height: 75px;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      color: #fff;
+      z-index: 1;
+    }
+
+    /* 정답 테이블 스타일 */
+    .answer-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .answer-header h2 {
+      font-size: 1.5rem;
+      margin: 0;
+    }
+    .answer-header p {
+      font-size: 1rem;
+      color: #555;
+    }
+    .answer-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 40px;
+    }
+    .answer-table th,
+    .answer-table td {
+      border: 1px solid #e91e63;
+      padding: 8px;
+      text-align: center;
+    }
+    .answer-table th {
+      background: #fce4ec;
+    }
+    .answer-table tr:nth-child(even) {
+      background: #fff0f6;
     }
   </style>
 </head>
@@ -39,16 +104,32 @@
   <div id="answers"></div>
 
   <script>
-    // 로컬스토리지에 담긴 데이터 불러오기
     const list = JSON.parse(localStorage.getItem('popupData') || '[]').slice(0,30);
-    let idx=0, iv;
-    const slide = document.getElementById('slide'),
-          startBtn = document.getElementById('startTest'),
-          ansBtn   = document.getElementById('showAnswers'),
-          answers  = document.getElementById('answers'),
-          sndPop   = document.getElementById('sndPop'),
-          countdown= document.getElementById('countdown');
+    let idx = 0, iv;
+    const slide      = document.getElementById('slide'),
+          startBtn   = document.getElementById('startTest'),
+          ansBtn     = document.getElementById('showAnswers'),
+          answers    = document.getElementById('answers'),
+          sndPop     = document.getElementById('sndPop'),
+          countdown  = document.getElementById('countdown');
 
+    // 3-2-1 카운트다운 단일 실행 함수
+    function runCountdown(callback) {
+      let count = 3;
+      countdown.textContent = count;
+      countdown.style.display = 'flex';
+      const timer = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdown.textContent = count;
+        } else {
+          clearInterval(timer);
+          if (callback) callback();
+        }
+      }, 1000);
+    }
+
+    // 슬라이드 + 이중 카운트다운
     function showNext() {
       if (idx >= list.length) {
         clearInterval(iv);
@@ -57,36 +138,62 @@
         return;
       }
       slide.textContent = list[idx].word;
-      countdown.style.display = 'flex';
-      let count = 3;
-      countdown.textContent = count;
-      const cntInt = setInterval(() => {
-        if (--count <= 0) clearInterval(cntInt);
-        countdown.textContent = count;
-      }, 1000);
-      sndPop.currentTime = 0; sndPop.play().catch(() => {});
-      setTimeout(() => {
+      // 첫 번째 3-2-1
+      runCountdown(() => {
         slide.textContent = '';
-        sndPop.currentTime = 0; sndPop.play().catch(() => {});
-        let count2 = 3;
-        countdown.textContent = count2;
-        const cntInt2 = setInterval(() => {
-          if (--count2 <= 0) clearInterval(cntInt2);
-          countdown.textContent = count2;
-        }, 1000);
-      }, 3000);
+        sndPop.currentTime = 0;
+        sndPop.play().catch(() => {});
+        // 두 번째 3-2-1
+        runCountdown(() => {
+          sndPop.currentTime = 0;
+          sndPop.play().catch(() => {});
+        });
+      });
+      sndPop.currentTime = 0;
+      sndPop.play().catch(() => {});
       idx++;
     }
 
+    // 테스트 시작 버튼
     startBtn.addEventListener('click', () => {
       startBtn.style.display = 'none';
       iv = setInterval(showNext, 6000);
       showNext();
     });
+
+    // 정답 확인 버튼 → 예쁜 테이블로 출력
     ansBtn.addEventListener('click', () => {
-      answers.innerHTML = '<ol>' 
-        + list.map(o => `<li>${o.word} — ${o.meaning}</li>`).join('') 
-        + '</ol>';
+      // 헤더
+      const headerHtml = `
+        <div class="answer-header">
+          <h2>테스트 범위</h2>
+          <p>–</p>
+        </div>`;
+      // 테이블 생성
+      let tableHtml = `
+        <table class="answer-table">
+          <thead>
+            <tr>
+              <th>번호</th>
+              <th>회차</th>
+              <th>문제 단어</th>
+              <th>정답</th>
+            </tr>
+          </thead>
+          <tbody>`;
+      list.forEach((o, i) => {
+        tableHtml += `
+            <tr>
+              <td>${i + 1}</td>
+              <td>–</td>
+              <td>${o.word}</td>
+              <td>${o.meaning}</td>
+            </tr>`;
+      });
+      tableHtml += `
+          </tbody>
+        </table>`;
+      answers.innerHTML = headerHtml + tableHtml;
       ansBtn.style.display = 'none';
     });
   </script>
