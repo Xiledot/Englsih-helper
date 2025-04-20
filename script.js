@@ -23,11 +23,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const cat   = inputCategory.value.trim();
       const sub   = inputSubcategory.value.trim();
       const title = inputTitle.value.trim();
-      const words = inputWords.value.trim().split('\n')
-        .map(l => {
-          const [w, ...m] = l.trim().split(/\s+/);
-          return { word: w, meaning: m.join(' ') };
-        });
+      // 영어(여러 단어 가능)와 한글 뜻을 첫 한글 글자 위치로 자동 분리
+      const words = inputWords.value.trim().split('\n').map(l => {
+        const idxKor = l.search(/[가-힣]/);
+        const word = idxKor !== -1 
+          ? l.substring(0, idxKor).trim() 
+          : l.trim();
+        const meaning = idxKor !== -1 
+          ? l.substring(idxKor).trim() 
+          : '';
+        return { word, meaning };
+      });
 
       if (!cat || !sub || !title || words.length === 0) {
         return alert('모든 항목을 입력해주세요.');
@@ -124,4 +130,4 @@ document.addEventListener('DOMContentLoaded', () => {
       window.open('popup.html', '_blank');
     }
 
-  }); // end DOMContentLoaded
+}); // end DOMContentLoaded
