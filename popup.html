@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>통합 테스트</title>
+  <style>
+    body {
+      margin:0; padding:0; background:#000; color:#fff;
+      display:flex; flex-direction:column; justify-content:center;
+      align-items:center; height:100vh; font-family:Arial,sans-serif;
+    }
+    #slide { font-size:6rem; font-weight:600; height:1.5em; margin-bottom:40px; }
+    #controls button {
+      padding:12px 24px; margin:0 8px; font-size:1.2rem;
+      border:none; border-radius:8px; background:#3498db; color:#fff;
+      cursor:pointer; transition:.2s;
+    }
+    #controls button:hover { background:#2980b9; }
+    #answers { margin-top:30px; width:80%; max-width:600px; text-align:left; font-size:1.1rem; line-height:1.4; }
+    #answers ol { padding-left:20px; }
+    /* 카운트다운 원형 */
+    #countdown {
+      position: absolute; top:20px; left:20px;
+      width:75px; height:75px;
+      border:3px solid #fff; border-radius:50%;
+      display:none; align-items:center; justify-content:center;
+      font-size:1rem; color:#fff; z-index:1;
+    }
+  </style>
+</head>
+<body>
+  <div id="countdown">3</div>
+  <audio id="sndPop" src="/audio/pop.mp3" preload="auto"></audio>
+  <div id="slide"></div>
+  <div id="controls">
+    <button id="startTest">테스트 시작</button>
+    <button id="showAnswers" style="display:none">정답 확인</button>
+  </div>
+  <div id="answers"></div>
+
+  <script>
+    // 로컬스토리지에 담긴 데이터 불러오기
+    const list = JSON.parse(localStorage.getItem('popupData') || '[]').slice(0,30);
+    let idx=0, iv;
+    const slide = document.getElementById('slide'),
+          startBtn = document.getElementById('startTest'),
+          ansBtn   = document.getElementById('showAnswers'),
+          answers  = document.getElementById('answers'),
+          sndPop   = document.getElementById('sndPop'),
+          countdown= document.getElementById('countdown');
+
+    function showNext() {
+      if (idx >= list.length) {
+        clearInterval(iv);
+        ansBtn.style.display = 'inline-block';
+        countdown.style.display = 'none';
+        return;
+      }
+      slide.textContent = list[idx].word;
+      countdown.style.display = 'flex';
+      let count = 3;
+      countdown.textContent = count;
+      const cntInt = setInterval(() => {
+        if (--count <= 0) clearInterval(cntInt);
+        countdown.textContent = count;
+      }, 1000);
+      sndPop.currentTime = 0; sndPop.play().catch(() => {});
+      setTimeout(() => {
+        slide.textContent = '';
+        sndPop.currentTime = 0; sndPop.play().catch(() => {});
+        let count2 = 3;
+        countdown.textContent = count2;
+        const cntInt2 = setInterval(() => {
+          if (--count2 <= 0) clearInterval(cntInt2);
+          countdown.textContent = count2;
+        }, 1000);
+      }, 3000);
+      idx++;
+    }
+
+    startBtn.addEventListener('click', () => {
+      startBtn.style.display = 'none';
+      iv = setInterval(showNext, 6000);
+      showNext();
+    });
+    ansBtn.addEventListener('click', () => {
+      answers.innerHTML = '<ol>' 
+        + list.map(o => `<li>${o.word} — ${o.meaning}</li>`).join('') 
+        + '</ol>';
+      ansBtn.style.display = 'none';
+    });
+  </script>
+</body>
+</html>

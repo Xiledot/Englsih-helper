@@ -16,60 +16,70 @@
       --radius: 8px;
       --trans: 0.2s;
     }
-    * { box-sizing: border-box; margin:0; padding:0 }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', sans-serif;
       background: var(--bg-page);
       color: var(--text);
       padding: 20px;
-      line-height:1.6;
+      line-height: 1.6;
     }
-    h1 { text-align:center; margin-bottom:20px; font-weight:600 }
+    h1 { text-align: center; margin-bottom: 20px; font-weight: 600; }
     .card {
       background: var(--bg-card);
       border-radius: var(--radius);
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      padding:20px; margin-bottom:20px;
+      padding: 20px;
+      margin-bottom: 20px;
     }
-    label { display:block; margin-bottom:12px; font-weight:500 }
+    label { display: block; margin-bottom: 12px; font-weight: 500; }
     input, textarea {
-      width:100%; padding:10px; margin-top:6px;
-      border:1px solid #ddd; border-radius:var(--radius);
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ddd;
+      border-radius: var(--radius);
       transition: border-color var(--trans);
     }
     input:focus, textarea:focus {
       border-color: var(--primary);
-      outline:none;
+      outline: none;
     }
     button {
-      display:inline-block;
-      padding:10px 16px; margin:8px 8px 0 0;
-      font-size:1rem; color:#fff; border:none;
+      display: inline-block;
+      padding: 10px 16px;
+      margin: 8px 8px 0 0;
+      font-size: 1rem;
+      color: #fff;
+      border: none;
       border-radius: var(--radius);
       background: var(--primary);
-      cursor:pointer; transition: background var(--trans);
+      cursor: pointer;
+      transition: background var(--trans);
     }
-    button.secondary { background: var(--secondary) }
-    button:hover { background: var(--primary-dark) }
-    button.secondary:hover { background: #27ae60 }
+    button.secondary { background: var(--secondary); }
+    button:hover { background: var(--primary-dark); }
+    button.secondary:hover { background: #27ae60; }
 
     /* 트리 구조 스타일 */
     #wordlist-tree details {
-      margin-bottom:8px;
-      border:1px solid #eee;
-      border-radius:var(--radius);
-      padding:8px 12px;
-      background:#fafafa;
+      margin-bottom: 8px;
+      border: 1px solid #eee;
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      background: #fafafa;
     }
     #wordlist-tree summary {
-      font-weight:600;
-      cursor:pointer;
-      list-style:none;
-      white-space: nowrap;        /* 줄바꿈 방지 */
+      font-weight: 600;
+      cursor: pointer;
+      list-style: none;
+      white-space: nowrap;
     }
-    #wordlist-tree summary::-webkit-details-marker { display:none }
+    #wordlist-tree summary::-webkit-details-marker { display: none; }
     #wordlist-tree summary::before {
-      content:'▸'; display:inline-block; margin-right:6px;
+      content: '▸';
+      display: inline-block;
+      margin-right: 6px;
       transition: transform var(--trans);
     }
     #wordlist-tree details[open] summary::before {
@@ -81,14 +91,13 @@
     #wordlist-tree li {
       margin: 6px 0;
       color: var(--text-light);
-      white-space: nowrap;        /* 줄바꿈 방지 */
+      white-space: nowrap;
     }
-    #wordlist-tree li:hover { color: var(--text) }
+    #wordlist-tree li:hover { color: var(--text); }
     #wordlist-tree li label {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      white-space: nowrap;        /* 줄바꿈 방지 */
     }
     #wordlist-tree li input[type="checkbox"] {
       margin: 0;
@@ -162,16 +171,19 @@
       }
       try {
         const res = await fetch('/.netlify/functions/save-wordlist', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({category:cat,subcategory:sub,title,words})
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category: cat, subcategory: sub, title, words })
         });
-        const body = await res.json().catch(()=>({}));
-        if (!res.ok) throw new Error(body.error||res.status);
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(body.error || res.status);
         alert('✅ 저장되었습니다!');
-        inputCategory.value=''; inputSubcategory.value=''; inputTitle.value=''; inputWords.value='';
+        inputCategory.value = '';
+        inputSubcategory.value = '';
+        inputTitle.value = '';
+        inputWords.value = '';
       } catch (e) {
-        alert('저장 실패: '+e.message);
+        alert('저장 실패: ' + e.message);
       }
     });
 
@@ -182,9 +194,9 @@
         const root = document.getElementById('wordlist-tree');
         root.innerHTML = '';
 
-        const byCat = items.reduce((acc, {category, subcategory, title}) => {
-          acc[category] = acc[category]||{};
-          acc[category][subcategory] = acc[category][subcategory]||[];
+        const byCat = items.reduce((acc, { category, subcategory, title }) => {
+          acc[category] = acc[category] || {};
+          acc[category][subcategory] = acc[category][subcategory] || [];
           acc[category][subcategory].push(title);
           return acc;
         }, {});
@@ -197,7 +209,7 @@
 
           for (const [sub, list] of Object.entries(submap)) {
             const d2 = document.createElement('details');
-            d2.style.marginLeft='12px';
+            d2.style.marginLeft = '12px';
             const s2 = document.createElement('summary');
             s2.textContent = sub;
             d2.appendChild(s2);
@@ -218,7 +230,7 @@
           root.appendChild(d1);
         }
       } catch (e) {
-        alert('목록 불러오기 오류: '+e.message);
+        alert('목록 불러오기 오류: ' + e.message);
       }
     }
     loadBtn.addEventListener('click', renderTree);
@@ -238,142 +250,17 @@
         }
         openMultiTestPopup(allWords);
       } catch (e) {
-        alert('통합 테스트 오류: '+e.message);
+        alert('통합 테스트 오류: ' + e.message);
       }
     });
 
     // 팝업 열기 (수정된 부분)
     function openMultiTestPopup(words) {
-      const newWin = window.open();
+      // 데이터 섞고 localStorage에 저장
       const data = JSON.stringify(shuffle(words), null, 2);
-      newWin.document.write(`
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>통합 테스트</title>
-  <style>
-    body {
-      margin:0; padding:0; background:#000; color:#fff;
-      display:flex; flex-direction:column; justify-content:center;
-      align-items:center; height:100vh; font-family:Arial,sans-serif;
-    }
-    #slide {
-      font-size:6rem; font-weight:600; height:1.5em; margin-bottom:40px;
-      z-index: 1;
-    }
-    #controls button {
-      padding:12px 24px; margin:0 8px; font-size:1.2rem;
-      border:none; border-radius:8px; background:#3498db; color:#fff;
-      cursor:pointer; transition:.2s;
-      z-index: 1;
-    }
-    #controls button:hover { background:#2980b9; }
-    #answers {
-      margin-top:30px; width:80%; max-width:600px;
-      text-align:left; font-size:1.1rem; line-height:1.4;
-      z-index: 1;
-    }
-    #answers ol { padding-left:20px; }
-    #answers li  { margin:6px 0; }
-
-    /* 워터마크 중앙 표시 */
-    #watermark {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      opacity: 0.1;
-      pointer-events: none;
-      z-index: 0;
-    }
-    /* 카운트다운 원형 표시 */
-    #countdown {
-      position: absolute;
-      width: 150px;
-      height: 150px;
-      border: 5px solid #fff;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      color: #fff;
-      z-index: 1;
-    }
-  </style>
-</head>
-<body>
-  <div id="watermark">
-    <img src="/워터마크_가로형.png" alt="watermark" />
-  </div>
-  <div id="countdown">3</div>
-  <audio id="sndPop" src="/audio/pop.mp3" preload="auto"></audio>
-  <div id="slide"></div>
-  <div id="controls">
-    <button id="startTest">테스트 시작</button>
-    <button id="showAnswers" style="display:none">정답 확인</button>
-  </div>
-  <div id="answers"></div>
-  <script>
-    const list = ${data}.slice(0,30);
-    let idx=0, iv;
-    const slide     = document.getElementById('slide'),
-          startBtn  = document.getElementById('startTest'),
-          ansBtn    = document.getElementById('showAnswers'),
-          answers   = document.getElementById('answers'),
-          sndPop    = document.getElementById('sndPop'),
-          countdown = document.getElementById('countdown');
-
-    function showNext() {
-      if (idx >= list.length) {
-        clearInterval(iv);
-        ansBtn.style.display = 'inline-block';
-        countdown.style.display = 'none';
-        return;
-      }
-      // 1) 단어 표시 및 카운트다운
-      slide.textContent = list[idx].word;
-      countdown.style.display = 'flex';
-      let count = 3;
-      countdown.textContent = count;
-      const cntInt = setInterval(() => {
-        count--;
-        countdown.textContent = count;
-        if (count <= 0) clearInterval(cntInt);
-      }, 1000);
-      sndPop.currentTime = 0;
-      sndPop.play().catch(() => {});
-      // 2) 3초 후 단어 숨기고 블랙 화면 카운트다운
-      setTimeout(() => {
-        slide.textContent = '';
-        sndPop.currentTime = 0;
-        sndPop.play().catch(() => {});
-        let count2 = 3;
-        countdown.textContent = count2;
-        const cntInt2 = setInterval(() => {
-          count2--;
-          countdown.textContent = count2;
-          if (count2 <= 0) clearInterval(cntInt2);
-        }, 1000);
-      }, 3000);
-      idx++;
-    }
-
-    startBtn.addEventListener('click', () => {
-      startBtn.style.display = 'none';
-      iv = setInterval(showNext, 6000);
-      showNext();
-    });
-    ansBtn.addEventListener('click', () => {
-      answers.innerHTML = '<ol>' + list.map(o => '<li>' + o.word + ' — ' + o.meaning + '</li>').join('') + '</ol>';
-      ansBtn.style.display = 'none';
-    });
-  <\/script>
-</body>
-</html>
-      `);
-      newWin.document.close();
+      localStorage.setItem('popupData', data);
+      // popup.html 페이지로 새 창 열기 (자동 적용 가능)
+      window.open('popup.html', 'multiTestPopup', 'width=400,height=600');
     }
 
   }); // end DOMContentLoaded
