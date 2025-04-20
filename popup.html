@@ -53,7 +53,7 @@
       z-index: 1;
     }
 
-    /* 정답 확인 테이블 스타일 */
+    /* 정답 테이블 스타일 */
     .answer-header {
       text-align: center;
       margin-bottom: 20px;
@@ -109,8 +109,21 @@
   <div id="answers"></div>
 
   <script>
-    const list = JSON.parse(localStorage.getItem('popupData') || '[]').slice(0,30);
-    const meta = JSON.parse(localStorage.getItem('popupMeta') || '{"categories":[],"subcategories":[]}');
+    // 원본 데이터와 메타 읽기
+    const raw = JSON.parse(localStorage.getItem('popupData') || '[]');
+    const list = raw.slice(0, 30);
+    const storedMeta = JSON.parse(
+      localStorage.getItem('popupMeta') ||
+      '{"categories":[],"subcategories":[]}'
+    );
+    // 메타가 없으면 raw에서 추출
+    const categories = storedMeta.categories.length
+      ? storedMeta.categories
+      : [...new Set(raw.map(o => o.category))];
+    const subcategories = storedMeta.subcategories.length
+      ? storedMeta.subcategories
+      : [...new Set(raw.map(o => o.subcategory))];
+
     let idx = 0, iv;
     const slide     = document.getElementById('slide'),
           startBtn  = document.getElementById('startTest'),
@@ -119,7 +132,8 @@
           sndPop    = document.getElementById('sndPop'),
           countdown = document.getElementById('countdown');
 
-    function runCountdown(callback) {
+    // 3-2-1 카운트다운
+    function runCountdown(cb) {
       let count = 3;
       countdown.textContent = count;
       countdown.style.display = 'flex';
@@ -129,11 +143,12 @@
           countdown.textContent = count;
         } else {
           clearInterval(timer);
-          if (callback) callback();
+          cb && cb();
         }
       }, 1000);
     }
 
+    // 다음 슬라이드
     function showNext() {
       if (idx >= list.length) {
         clearInterval(iv);
@@ -144,28 +159,30 @@
       slide.textContent = list[idx].word;
       runCountdown(() => {
         slide.textContent = '';
-        sndPop.currentTime = 0; sndPop.play().catch(()=>{});
+        sndPop.currentTime = 0; sndPop.play().catch(() => {});
         runCountdown(() => {
-          sndPop.currentTime = 0; sndPop.play().catch(()=>{});
+          sndPop.currentTime = 0; sndPop.play().catch(() => {});
         });
       });
-      sndPop.currentTime = 0; sndPop.play().catch(()=>{});
+      sndPop.currentTime = 0; sndPop.play().catch(() => {});
       idx++;
     }
 
+    // 시작
     startBtn.addEventListener('click', () => {
       startBtn.style.display = 'none';
       iv = setInterval(showNext, 6000);
       showNext();
     });
 
+    // 정답 확인
     ansBtn.addEventListener('click', () => {
-      // 헤더에 대/중분류 표시
+      // 헤더: 대분류 / 중분류
       const headerHtml = `
         <div class="answer-header">
-          <h2>테스트 범위: ${meta.categories.join(' / ')} / ${meta.subcategories.join(' / ')}</h2>
-          <p></p>
+          <h2>테스트 범위: ${categories.join(' / ')} / ${subcategories.join(' / ')}</h2>
         </div>`;
+      // 테이블
       let tableHtml = `
         <table class="answer-table">
           <thead>
@@ -177,11 +194,11 @@
             </tr>
           </thead>
           <tbody>`;
-      list.forEach((o,i) => {
+      list.forEach((o, i) => {
         tableHtml += `
             <tr>
-              <td>${i+1}</td>
-              <td>${o.title}</td>
+              <td>${i + 1}</td>
+              <td>${o.title || o.subcategory}</td>
               <td>${o.word}</td>
               <td>${o.meaning}</td>
             </tr>`;
@@ -189,6 +206,7 @@
       tableHtml += `
           </tbody>
         </table>`;
+
       answers.innerHTML = headerHtml + tableHtml;
       answers.style.display = 'block';
       ansBtn.style.display = 'none';
