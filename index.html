@@ -1,270 +1,101 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <title>영어 학습 도우미</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>통합 테스트</title>
   <style>
-    :root {
-      --primary: #3498db;
-      --primary-dark: #2980b9;
-      --secondary: #2ecc71;
-      --bg-page: #f4f7fa;
-      --bg-card: #fff;
-      --text: #333;
-      --text-light: #666;
-      --radius: 8px;
-      --trans: 0.2s;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg-page);
-      color: var(--text);
-      padding: 20px;
-      line-height: 1.6;
+      margin:0; padding:0; background:#000; color:#fff;
+      display:flex; flex-direction:column; justify-content:center;
+      align-items:center; height:100vh; font-family:Arial,sans-serif;
     }
-    h1 { text-align: center; margin-bottom: 20px; font-weight: 600; }
-    .card {
-      background: var(--bg-card);
-      border-radius: var(--radius);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      padding: 20px;
-      margin-bottom: 20px;
+    #slide { font-size:6rem; font-weight:600; height:1.5em; margin-bottom:40px; }
+    #controls button {
+      padding:12px 24px; margin:0 8px; font-size:1.2rem;
+      border:none; border-radius:8px; background:#3498db; color:#fff;
+      cursor:pointer; transition:.2s;
     }
-    label { display: block; margin-bottom: 12px; font-weight: 500; }
-    input, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      border: 1px solid #ddd;
-      border-radius: var(--radius);
-      transition: border-color var(--trans);
-    }
-    input:focus, textarea:focus {
-      border-color: var(--primary);
-      outline: none;
-    }
-    button {
-      display: inline-block;
-      padding: 10px 16px;
-      margin: 8px 8px 0 0;
-      font-size: 1rem;
-      color: #fff;
-      border: none;
-      border-radius: var(--radius);
-      background: var(--primary);
-      cursor: pointer;
-      transition: background var(--trans);
-    }
-    button.secondary { background: var(--secondary); }
-    button:hover { background: var(--primary-dark); }
-    button.secondary:hover { background: #27ae60; }
-
-    /* 트리 구조 스타일 */
-    #wordlist-tree details {
-      margin-bottom: 8px;
-      border: 1px solid #eee;
-      border-radius: var(--radius);
-      padding: 8px 12px;
-      background: #fafafa;
-    }
-    #wordlist-tree summary {
-      font-weight: 600;
-      cursor: pointer;
-      list-style: none;
-      white-space: nowrap;
-    }
-    #wordlist-tree summary::-webkit-details-marker { display: none; }
-    #wordlist-tree summary::before {
-      content: '▸';
-      display: inline-block;
-      margin-right: 6px;
-      transition: transform var(--trans);
-    }
-    #wordlist-tree details[open] summary::before {
-      transform: rotate(90deg);
-    }
-    #wordlist-tree ul {
-      padding-left: 24px;
-    }
-    #wordlist-tree li {
-      margin: 6px 0;
-      color: var(--text-light);
-      white-space: nowrap;
-    }
-    #wordlist-tree li:hover { color: var(--text); }
-    #wordlist-tree li label {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    #wordlist-tree li input[type="checkbox"] {
-      margin: 0;
+    #controls button:hover { background:#2980b9; }
+    #answers { margin-top:30px; width:80%; max-width:600px; text-align:left; font-size:1.1rem; line-height:1.4; }
+    #answers ol { padding-left:20px; }
+    #countdown {
+      position: absolute; top:20px; left:20px;
+      width:75px; height:75px;
+      border:3px solid #fff; border-radius:50%;
+      display:none; align-items:center; justify-content:center;
+      font-size:1rem; color:#fff; z-index:1;
     }
   </style>
 </head>
 <body>
-
-  <h1>영어 학습 도우미</h1>
-
-  <!-- 1. 단어장 저장 -->
-  <div class="card">
-    <h2>1. 단어장 저장</h2>
-    <label>대분류
-      <input id="inputCategory" placeholder="교과서, 모의고사 등" />
-    </label>
-    <label>중분류
-      <input id="inputSubcategory" placeholder="올림포스 1강 등" />
-    </label>
-    <label>제목
-      <input id="inputTitle" placeholder="올림포스1" />
-    </label>
-    <label>단어·뜻 (한 줄에 “단어 뜻”)
-      <textarea id="inputWords" rows="5" placeholder="importance 중요성&#10;prominence 두드러짐"></textarea>
-    </label>
-    <button id="save-wordlist-btn">저장하기</button>
-    <button id="load-wordlists-btn" class="secondary">저장된 목록 불러오기</button>
-  </div>
-
-  <!-- 2. 단어장 목록 -->
-  <div class="card">
-    <h2>2. 단어장 목록</h2>
-    <div id="wordlist-tree"></div>
-    <button id="multi-test-btn" class="secondary">선택된 단어장 테스트 시작</button>
-  </div>
-
-  <!-- 사운드 -->
+  <div id="countdown">3</div>
   <audio id="sndPop" src="/audio/pop.mp3" preload="auto"></audio>
+  <div id="slide"></div>
+  <div id="controls">
+    <button id="startTest">테스트 시작</button>
+    <button id="showAnswers" style="display:none">정답 확인</button>
+  </div>
+  <div id="answers"></div>
 
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const saveBtn      = document.getElementById('save-wordlist-btn');
-    const loadBtn      = document.getElementById('load-wordlists-btn');
-    const multiTestBtn = document.getElementById('multi-test-btn');
-    const sndPop       = document.getElementById('sndPop');
+    const list = JSON.parse(localStorage.getItem('popupData') || '[]').slice(0,30);
+    let idx = 0, iv;
+    const slide = document.getElementById('slide'),
+          startBtn = document.getElementById('startTest'),
+          ansBtn = document.getElementById('showAnswers'),
+          answers = document.getElementById('answers'),
+          sndPop = document.getElementById('sndPop'),
+          countdown = document.getElementById('countdown');
 
-    function shuffle(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
+    // 단일 카운트다운: 3,2,1
+    function runCountdown(callback) {
+      let count = 3;
+      countdown.textContent = count;
+      countdown.style.display = 'flex';
+      const timer = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdown.textContent = count;
+        } else {
+          clearInterval(timer);
+          if (callback) callback();
+        }
+      }, 1000);
     }
 
-    async function fetchJSON(url) {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`${url} 호출 실패 (${res.status})`);
-      return res.json();
-    }
-
-    // 저장
-    saveBtn.addEventListener('click', async () => {
-      const cat   = inputCategory.value.trim();
-      const sub   = inputSubcategory.value.trim();
-      const title = inputTitle.value.trim();
-      const words = inputWords.value.trim().split('\n')
-        .map(l => { const [w, ...m] = l.trim().split(/\s+/); return { word: w, meaning: m.join(' ') }; });
-
-      if (!cat || !sub || !title || words.length === 0) {
-        return alert('모든 항목을 입력해주세요.');
+    function showNext() {
+      if (idx >= list.length) {
+        clearInterval(iv);
+        ansBtn.style.display = 'inline-block';
+        countdown.style.display = 'none';
+        return;
       }
-      try {
-        const res = await fetch('/.netlify/functions/save-wordlist', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ category: cat, subcategory: sub, title, words })
+      slide.textContent = list[idx].word;
+      // 첫 번째 3-2-1
+      runCountdown(() => {
+        // 단어 숨기기, 효과음
+        slide.textContent = '';
+        sndPop.currentTime = 0; sndPop.play().catch(() => {});
+        // 두 번째 3-2-1
+        runCountdown(() => {
+          sndPop.currentTime = 0; sndPop.play().catch(() => {});
         });
-        const body = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(body.error || res.status);
-        alert('✅ 저장되었습니다!');
-        inputCategory.value = '';
-        inputSubcategory.value = '';
-        inputTitle.value = '';
-        inputWords.value = '';
-      } catch (e) {
-        alert('저장 실패: ' + e.message);
-      }
-    });
-
-    // 목록 렌더
-    async function renderTree() {
-      try {
-        const items = await fetchJSON('/.netlify/functions/list-wordlists');
-        const root = document.getElementById('wordlist-tree');
-        root.innerHTML = '';
-
-        const byCat = items.reduce((acc, { category, subcategory, title }) => {
-          acc[category] = acc[category] || {};
-          acc[category][subcategory] = acc[category][subcategory] || [];
-          acc[category][subcategory].push(title);
-          return acc;
-        }, {});
-
-        for (const [cat, submap] of Object.entries(byCat)) {
-          const d1 = document.createElement('details');
-          const s1 = document.createElement('summary');
-          s1.textContent = cat;
-          d1.appendChild(s1);
-
-          for (const [sub, list] of Object.entries(submap)) {
-            const d2 = document.createElement('details');
-            d2.style.marginLeft = '12px';
-            const s2 = document.createElement('summary');
-            s2.textContent = sub;
-            d2.appendChild(s2);
-
-            const ul = document.createElement('ul');
-            list.forEach(t => {
-              const li = document.createElement('li');
-              li.innerHTML = `
-                <label>
-                  <input type="checkbox" class="wordlist-checkbox" value="${t}" />
-                  ${t}
-                </label>`;
-              ul.appendChild(li);
-            });
-            d2.appendChild(ul);
-            d1.appendChild(d2);
-          }
-          root.appendChild(d1);
-        }
-      } catch (e) {
-        alert('목록 불러오기 오류: ' + e.message);
-      }
-    }
-    loadBtn.addEventListener('click', renderTree);
-
-    // 통합 테스트
-    multiTestBtn.addEventListener('click', async () => {
-      const checked = Array.from(document.querySelectorAll('.wordlist-checkbox:checked'))
-        .map(cb => cb.value);
-      if (!checked.length) return alert('하나 이상 선택해주세요.');
-      if (!confirm(`선택된 [${checked.join(', ')}] 단어장으로 테스트 시작?`)) return;
-
-      try {
-        let allWords = [];
-        for (const t of checked) {
-          const arr = await fetchJSON(`/.netlify/functions/get-wordlist?title=${encodeURIComponent(t)}`);
-          allWords = allWords.concat(arr);
-        }
-        openMultiTestPopup(allWords);
-      } catch (e) {
-        alert('통합 테스트 오류: ' + e.message);
-      }
-    });
-
-    // 팝업 열기 (수정된 부분)
-    function openMultiTestPopup(words) {
-      // 데이터 섞고 localStorage에 저장
-      const data = JSON.stringify(shuffle(words), null, 2);
-      localStorage.setItem('popupData', data);
-      // popup.html 페이지로 새 창 열기 (자동 적용 가능)
-      window.open('popup.html', 'multiTestPopup', 'width=400,height=600');
+      });
+      sndPop.currentTime = 0; sndPop.play().catch(() => {});
+      idx++;
     }
 
-  }); // end DOMContentLoaded
+    startBtn.addEventListener('click', () => {
+      startBtn.style.display = 'none';
+      iv = setInterval(showNext, 6000);
+      showNext();
+    });
+    ansBtn.addEventListener('click', () => {
+      answers.innerHTML = '<ol>' +
+        list.map(o => `<li>${o.word} — ${o.meaning}</li>`).join('') +
+        '</ol>';
+      ansBtn.style.display = 'none';
+    });
   </script>
-
 </body>
 </html>
