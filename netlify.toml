@@ -1,3 +1,16 @@
 [build]
   publish = "."           # 정적 사이트 빌드 산출물이 index.html 바로 있는 경우
   functions = "netlify/functions"
+
+# lecture.html 페이지를 직접 서빙하도록 예외 처리
+[[redirects]]
+  from   = "/lecture.html"
+  to     = "/lecture.html"
+  status = 200
+  force  = true
+
+# SPA catch-all: 그 외 모든 경로를 index.html로 리다이렉트
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
