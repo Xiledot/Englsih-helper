@@ -63,6 +63,8 @@
   </style>
   <!-- jsPDF CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- html2pdf.js (한글 지원 PDF 생성) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -148,8 +150,8 @@
         summarySec.style.display = '';
 
         // 핵심 주제
-        themeSec.querySelector('p:nth-child(1)').innerHTML = `<strong>주제(한글):</strong> ${data.themeK}`;
-        themeSec.querySelector('p:nth-child(2)').innerHTML = `<strong>주제(영어):</strong> ${data.themeE}`;
+        themeKEl.innerText = data.themeK;
+        themeEEl.innerText = data.themeE;
         themeSec.style.display = '';
 
         // 직독직해
@@ -171,53 +173,17 @@
 
     downloadBtn.addEventListener('click', () => {
       if (!lectureData) return;
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      let y = 10;
-      doc.setFontSize(14);
-      doc.text('핵심 단어', 10, y);
-      y += 6;
-      doc.setFontSize(12);
-      lectureData.keywords.forEach(item => {
-        doc.text(`${item.word} (${item.meaning})`, 10, y);
-        y += 6;
-        doc.text('동의어: ' + item.synonyms.join(', '), 12, y);
-        y += 6;
-        doc.text('반의어: ' + item.antonyms.join(', '), 12, y);
-        y += 8;
-      });
-
-      doc.setFontSize(14);
-      doc.text('4단 요약', 10, y);
-      y += 6;
-      doc.setFontSize(12);
-      lectureData.summary.forEach((s, i) => {
-        doc.text(`${i+1}. ${s}`, 10, y);
-        y += 6;
-      });
-      y += 6;
-
-      doc.setFontSize(14);
-      doc.text('핵심 주제', 10, y);
-      y += 6;
-      doc.setFontSize(12);
-      doc.text('주제(한글): ' + lectureData.themeK, 10, y);
-      y += 6;
-      doc.text('주제(영어): ' + lectureData.themeE, 10, y);
-      y += 8;
-
-      doc.setFontSize(14);
-      doc.text('직독직해', 10, y);
-      y += 6;
-      doc.setFontSize(12);
-      lectureData.direct.forEach((o, i) => {
-        doc.text(`${i+1}. ${o.english}`, 10, y);
-        y += 6;
-        doc.text(o.korean, 12, y);
-        y += 8;
-      });
-
-      doc.save('lecture_notes.pdf');
+      // PDF로 변환할 영역 선택 (전체 컨테이너)
+      const element = document.querySelector('.container');
+      html2pdf()
+        .set({
+          margin:       10,
+          filename:     'lecture_notes.pdf',
+          html2canvas:  { scale: 2 },
+          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        })
+        .from(element)
+        .save();
     });
   </script>
 </body>
