@@ -1,0 +1,5 @@
+# lecture.html 페이지를 직접 서빙
+/lecture.html    /lecture.html    200
+
+# 그 외 모든 경로는 index.html로 리다이렉트 (SPA Fallback)
+/*               /index.html      200

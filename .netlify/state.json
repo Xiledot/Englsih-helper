@@ -1,20 +1,20 @@
 {
 	"geolocation": {
 		"data": {
-			"city": "Bucheon-si",
+			"city": "Nowon-gu",
 			"country": {
 				"code": "KR",
 				"name": "South Korea"
 			},
 			"subdivision": {
-				"code": "41",
-				"name": "Gyeonggi-do"
+				"code": "11",
+				"name": "Seoul"
 			},
 			"timezone": "Asia/Seoul",
-			"latitude": 37.4987,
-			"longitude": 126.7828,
-			"postalCode": "14554"
+			"latitude": 37.6537,
+			"longitude": 127.0717,
+			"postalCode": "017"
 		},
-		"timestamp": 1745081349154
+		"timestamp": 1745232073482
 	}
 }
