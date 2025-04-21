@@ -97,6 +97,8 @@
   </div>
 
   <script>
+    let lectureData = null;
+
     const generateBtn = document.getElementById('generateBtn');
     const downloadBtn = document.getElementById('downloadPdf');
     const inputText   = document.getElementById('inputText');
@@ -124,43 +126,51 @@
         });
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
+        lectureData = data;
 
         // 핵심 단어
         keywordsEl.innerHTML = '';
-        data.keywords.forEach(w => {
+        data.keywords.forEach(item => {
           const li = document.createElement('li');
-          li.textContent = w;
+          li.innerHTML = `
+            <strong>${item.word}</strong> (${item.meaning})<br>
+            동의어: ${item.synonyms.join(', ')}<br>
+            반의어: ${item.antonyms.join(', ')}
+          `;
           keywordsEl.appendChild(li);
         });
         keywordsSec.style.display = '';
 
-        // 4단 요약
-        summaryEl.innerHTML = data.summary.map((s,i)=>
-          `<p>${i+1}. ${s}</p>`).join('');
+        // 4단 요약 (한글)
+        summaryEl.innerHTML = data.summary.map((s, i) =>
+          `<p>${i+1}. ${s}</p>`
+        ).join('');
         summarySec.style.display = '';
 
         // 핵심 주제
-        themeKEl.textContent = data.themeK;
-        themeEEl.textContent = data.themeE;
+        themeSec.querySelector('p:nth-child(1)').innerHTML = `<strong>주제(한글):</strong> ${data.themeK}`;
+        themeSec.querySelector('p:nth-child(2)').innerHTML = `<strong>주제(영어):</strong> ${data.themeE}`;
         themeSec.style.display = '';
 
         // 직독직해
-        directEl.innerHTML = data.direct.map(chunk=>
-          `<p>${chunk}</p>`).join('');
+        directEl.innerHTML = data.direct.map((o, i) =>
+          `<p>${i+1}. ${o.english}</p><p>${o.korean}</p>`
+        ).join('');
         directSec.style.display = '';
 
         // PDF 버튼
         downloadBtn.style.display = '';
-        generateBtn.textContent = '제작하기';
       } catch (e) {
         alert('오류: ' + e.message);
         console.error(e);
       } finally {
         generateBtn.disabled = false;
+        generateBtn.textContent = '제작하기';
       }
     });
 
     downloadBtn.addEventListener('click', () => {
+      if (!lectureData) return;
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       let y = 10;
@@ -168,40 +178,46 @@
       doc.text('핵심 단어', 10, y);
       y += 6;
       doc.setFontSize(12);
-      data = JSON.parse(JSON.stringify({})); // placeholder
-      // 실제 data는 이전 fetch 데이터; for PDF demo, we re-fetch or store
-      // For simplicity, re-run generate fetch:
-      (async()=> {
-        const res = await fetch('/.netlify/functions/generateLesson', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: inputText.value })
-        });
-        const d = await res.json();
-        d.keywords.forEach((w,i)=>{
-          doc.text(`- ${w}`, 10, y);
-          y += 6;
-        });
+      lectureData.keywords.forEach(item => {
+        doc.text(`${item.word} (${item.meaning})`, 10, y);
         y += 6;
-        doc.setFontSize(14);
-        doc.text('4단 요약', 10, y);
+        doc.text('동의어: ' + item.synonyms.join(', '), 12, y);
         y += 6;
-        doc.setFontSize(12);
-        d.summary.forEach((s,i)=>{
-          doc.text(`${i+1}. ${s}`, 10, y);
-          y += 6;
-        });
+        doc.text('반의어: ' + item.antonyms.join(', '), 12, y);
+        y += 8;
+      });
+
+      doc.setFontSize(14);
+      doc.text('4단 요약', 10, y);
+      y += 6;
+      doc.setFontSize(12);
+      lectureData.summary.forEach((s, i) => {
+        doc.text(`${i+1}. ${s}`, 10, y);
         y += 6;
-        doc.setFontSize(14);
-        doc.text('핵심 주제', 10, y);
+      });
+      y += 6;
+
+      doc.setFontSize(14);
+      doc.text('핵심 주제', 10, y);
+      y += 6;
+      doc.setFontSize(12);
+      doc.text('주제(한글): ' + lectureData.themeK, 10, y);
+      y += 6;
+      doc.text('주제(영어): ' + lectureData.themeE, 10, y);
+      y += 8;
+
+      doc.setFontSize(14);
+      doc.text('직독직해', 10, y);
+      y += 6;
+      doc.setFontSize(12);
+      lectureData.direct.forEach((o, i) => {
+        doc.text(`${i+1}. ${o.english}`, 10, y);
         y += 6;
-        doc.setFontSize(12);
-        doc.text('한국어: ' + d.themeK, 10, y);
-        y += 6;
-        doc.text('English: ' + d.themeE, 10, y);
-        y += 6;
-        doc.save('lecture_notes.pdf');
-      })();
+        doc.text(o.korean, 12, y);
+        y += 8;
+      });
+
+      doc.save('lecture_notes.pdf');
     });
   </script>
 </body>
