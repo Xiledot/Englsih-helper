@@ -62,10 +62,6 @@
       font-size: 1.5rem;
       margin: 0;
     }
-    .answer-header p {
-      font-size: 1rem;
-      color: #555;
-    }
     .answer-table {
       width: 100%;
       border-collapse: collapse;
@@ -109,14 +105,24 @@
   <div id="answers"></div>
 
   <script>
-    // 원본 데이터와 메타 읽기
+    // 랜덤 섞기 함수
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // 데이터와 메타 읽기
     const raw = JSON.parse(localStorage.getItem('popupData') || '[]');
-    const list = raw.slice(0, 30);
+    const shuffled = shuffle(raw);
+    const list = shuffled.slice(0, 30);
+
     const storedMeta = JSON.parse(
       localStorage.getItem('popupMeta') ||
       '{"categories":[],"subcategories":[]}'
     );
-    // 메타가 없으면 raw에서 추출
     const categories = storedMeta.categories.length
       ? storedMeta.categories
       : [...new Set(raw.map(o => o.category))];
@@ -148,7 +154,7 @@
       }, 1000);
     }
 
-    // 다음 슬라이드
+    // 슬라이드 진행
     function showNext() {
       if (idx >= list.length) {
         clearInterval(iv);
@@ -168,7 +174,7 @@
       idx++;
     }
 
-    // 시작
+    // 테스트 시작
     startBtn.addEventListener('click', () => {
       startBtn.style.display = 'none';
       iv = setInterval(showNext, 6000);
@@ -177,12 +183,10 @@
 
     // 정답 확인
     ansBtn.addEventListener('click', () => {
-      // 헤더: 대분류 / 중분류
       const headerHtml = `
         <div class="answer-header">
           <h2>테스트 범위: ${categories.join(' / ')} / ${subcategories.join(' / ')}</h2>
         </div>`;
-      // 테이블
       let tableHtml = `
         <table class="answer-table">
           <thead>
