@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>강의용 교안 제작</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fa;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    textarea {
+      width: 100%;
+      height: 200px;
+      padding: 12px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+    }
+    button {
+      display: inline-block;
+      margin: 12px 6px 24px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+      background: #3498db;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    .section {
+      margin-bottom: 24px;
+    }
+    .section h2 {
+      margin-bottom: 12px;
+      font-size: 1.2rem;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 4px;
+    }
+    .section ul {
+      list-style: disc inside;
+      padding-left: 16px;
+    }
+  </style>
+  <!-- jsPDF CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>강의용 교안 제작</h1>
+    <div class="section">
+      <h2>지문 입력</h2>
+      <textarea id="inputText" placeholder="여기에 지문을 붙여넣어 주세요..."></textarea>
+      <button id="generateBtn">제작하기</button>
+      <button id="downloadPdf" style="display:none">PDF로 다운로드</button>
+    </div>
+
+    <div id="keywordsSection" class="section" style="display:none">
+      <h2>핵심 단어</h2>
+      <ul id="keywords"></ul>
+    </div>
+
+    <div id="summarySection" class="section" style="display:none">
+      <h2>4단 요약</h2>
+      <div id="summary"></div>
+    </div>
+
+    <div id="themeSection" class="section" style="display:none">
+      <h2>핵심 주제</h2>
+      <p><strong>한국어:</strong> <span id="themeK"></span></p>
+      <p><strong>English:</strong> <span id="themeE"></span></p>
+    </div>
+
+    <div id="directSection" class="section" style="display:none">
+      <h2>직독직해</h2>
+      <div id="direct"></div>
+    </div>
+  </div>
+
+  <script>
+    const generateBtn = document.getElementById('generateBtn');
+    const downloadBtn = document.getElementById('downloadPdf');
+    const inputText   = document.getElementById('inputText');
+    const keywordsEl  = document.getElementById('keywords');
+    const summaryEl   = document.getElementById('summary');
+    const themeKEl    = document.getElementById('themeK');
+    const themeEEl    = document.getElementById('themeE');
+    const directEl    = document.getElementById('direct');
+    const keywordsSec = document.getElementById('keywordsSection');
+    const summarySec  = document.getElementById('summarySection');
+    const themeSec    = document.getElementById('themeSection');
+    const directSec   = document.getElementById('directSection');
+
+    generateBtn.addEventListener('click', async () => {
+      const text = inputText.value.trim();
+      if (!text) return alert('지문을 입력해 주세요.');
+      generateBtn.disabled = true;
+      generateBtn.textContent = '생성 중...';
+
+      try {
+        const res = await fetch('/.netlify/functions/generateLesson', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+
+        // 핵심 단어
+        keywordsEl.innerHTML = '';
+        data.keywords.forEach(w => {
+          const li = document.createElement('li');
+          li.textContent = w;
+          keywordsEl.appendChild(li);
+        });
+        keywordsSec.style.display = '';
+
+        // 4단 요약
+        summaryEl.innerHTML = data.summary.map((s,i)=>
+          `<p>${i+1}. ${s}</p>`).join('');
+        summarySec.style.display = '';
+
+        // 핵심 주제
+        themeKEl.textContent = data.themeK;
+        themeEEl.textContent = data.themeE;
+        themeSec.style.display = '';
+
+        // 직독직해
+        directEl.innerHTML = data.direct.map(chunk=>
+          `<p>${chunk}</p>`).join('');
+        directSec.style.display = '';
+
+        // PDF 버튼
+        downloadBtn.style.display = '';
+        generateBtn.textContent = '제작하기';
+      } catch (e) {
+        alert('오류: ' + e.message);
+        console.error(e);
+      } finally {
+        generateBtn.disabled = false;
+      }
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      let y = 10;
+      doc.setFontSize(14);
+      doc.text('핵심 단어', 10, y);
+      y += 6;
+      doc.setFontSize(12);
+      data = JSON.parse(JSON.stringify({})); // placeholder
+      // 실제 data는 이전 fetch 데이터; for PDF demo, we re-fetch or store
+      // For simplicity, re-run generate fetch:
+      (async()=> {
+        const res = await fetch('/.netlify/functions/generateLesson', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: inputText.value })
+        });
+        const d = await res.json();
+        d.keywords.forEach((w,i)=>{
+          doc.text(`- ${w}`, 10, y);
+          y += 6;
+        });
+        y += 6;
+        doc.setFontSize(14);
+        doc.text('4단 요약', 10, y);
+        y += 6;
+        doc.setFontSize(12);
+        d.summary.forEach((s,i)=>{
+          doc.text(`${i+1}. ${s}`, 10, y);
+          y += 6;
+        });
+        y += 6;
+        doc.setFontSize(14);
+        doc.text('핵심 주제', 10, y);
+        y += 6;
+        doc.setFontSize(12);
+        doc.text('한국어: ' + d.themeK, 10, y);
+        y += 6;
+        doc.text('English: ' + d.themeE, 10, y);
+        y += 6;
+        doc.save('lecture_notes.pdf');
+      })();
+    });
+  </script>
+</body>
+</html>
