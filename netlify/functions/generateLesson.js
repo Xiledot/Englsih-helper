@@ -14,7 +14,7 @@ The JSON must be a single object with keys:
 - summary: array of strings (Korean, 4-item)
 - themeK: string
 - themeE: string
-- direct: array of objects {english, korean}`
+- direct: array of objects {english, korean}, one entry for every sentence in the passage in the original order`
     };
 
     // 2) 유저 메시지

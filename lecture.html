@@ -68,6 +68,8 @@
 </head>
 <body>
   <div class="container">
+      <!-- PDF 출력 범위 시작 -->
+      <div id="pdfContent">
     <h1>강의용 교안 제작</h1>
     <div class="section">
       <h2>지문 입력</h2>
@@ -96,6 +98,8 @@
       <h2>직독직해</h2>
       <div id="direct"></div>
     </div>
+      </div>
+      <!-- PDF 출력 범위 끝 -->
   </div>
 
   <script>
@@ -174,7 +178,7 @@
     downloadBtn.addEventListener('click', () => {
       if (!lectureData) return;
       // PDF로 변환할 영역 선택 (전체 컨테이너)
-      const element = document.querySelector('.container');
+      const element = document.getElementById('pdfContent');
       html2pdf()
         .set({
           margin:       10,
