@@ -2,139 +2,29 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>영어 학습 도우미</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>학습 도우미 홈</title>
   <style>
-    :root {
-      --primary: #3498db;
-      --primary-dark: #2980b9;
-      --secondary: #2ecc71;
-      --bg-page: #f4f7fa;
-      --bg-card: #fff;
-      --text: #333;
-      --text-light: #666;
-      --radius: 8px;
-      --trans: 0.2s;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg-page);
-      color: var(--text);
-      padding: 20px;
-      line-height: 1.6;
-    }
-    h1 { text-align: center; margin-bottom: 20px; font-weight: 600; }
-    .card {
-      background: var(--bg-card);
-      border-radius: var(--radius);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    label { display: block; margin-bottom: 12px; font-weight: 500; }
-    input, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      border: 1px solid #ddd;
-      border-radius: var(--radius);
-      transition: border-color var(--trans);
-    }
-    input:focus, textarea:focus {
-      border-color: var(--primary);
-      outline: none;
-    }
-    button {
-      display: inline-block;
-      padding: 10px 16px;
-      margin: 8px 8px 0 0;
-      font-size: 1rem;
-      color: #fff;
-      border: none;
-      border-radius: var(--radius);
-      background: var(--primary);
-      cursor: pointer;
-      transition: background var(--trans);
-    }
-    button.secondary { background: var(--secondary); }
-    button:hover { background: var(--primary-dark); }
-    button.secondary:hover { background: #27ae60; }
-
-    /* 트리 구조 스타일 */
-    #wordlist-tree details {
-      margin-bottom: 8px;
-      border: 1px solid #eee;
-      border-radius: var(--radius);
-      padding: 8px 12px;
-      background: #fafafa;
-    }
-    #wordlist-tree summary {
-      font-weight: 600;
-      cursor: pointer;
-      list-style: none;
-      white-space: nowrap;
-    }
-    #wordlist-tree summary::-webkit-details-marker { display: none; }
-    #wordlist-tree summary::before {
-      content: '▸';
-      display: inline-block;
-      margin-right: 6px;
-      transition: transform var(--trans);
-    }
-    #wordlist-tree details[open] summary::before {
-      transform: rotate(90deg);
-    }
-    #wordlist-tree ul { padding-left: 24px; }
-    #wordlist-tree li {
-      margin: 6px 0;
-      color: var(--text-light);
-      white-space: nowrap;
-    }
-    #wordlist-tree li:hover { color: var(--text); }
-    #wordlist-tree li label {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    #wordlist-tree li input[type="checkbox"] { margin: 0; }
+    body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: Arial, sans-serif; background: #f4f7fa; }
+    .container { text-align: center; }
+    h1 { margin-bottom: 40px; }
+    button { padding: 16px 32px; margin: 0 16px; font-size: 1.2rem; border: none; border-radius: 8px; background: #3498db; color: #fff; cursor: pointer; transition: background .2s; }
+    button:hover { background: #2980b9; }
   </style>
 </head>
 <body>
-
-  <h1>영어 학습 도우미</h1>
-
-  <!-- 1. 단어장 저장 -->
-  <div class="card">
-    <h2>1. 단어장 저장</h2>
-    <label>대분류
-      <input id="inputCategory" placeholder="교과서, 모의고사 등" />
-    </label>
-    <label>중분류
-      <input id="inputSubcategory" placeholder="올림포스 1강 등" />
-    </label>
-    <label>제목
-      <input id="inputTitle" placeholder="올림포스1" />
-    </label>
-    <label>단어·뜻 (한 줄에 “단어 뜻”)
-      <textarea id="inputWords" rows="5"
-        placeholder="importance 중요성&#10;prominence 두드러짐"></textarea>
-    </label>
-    <button id="save-wordlist-btn">저장하기</button>
-    <button id="load-wordlists-btn" class="secondary">저장된 목록 불러오기</button>
+  <div class="container">
+    <h1>학습 도우미</h1>
+    <button id="lectureBtn">강의용 교안 제작</button>
+    <button id="testBtn">단어 테스트</button>
   </div>
-
-  <!-- 2. 단어장 목록 -->
-  <div class="card">
-    <h2>2. 단어장 목록</h2>
-    <div id="wordlist-tree"></div>
-    <button id="multi-test-btn" class="secondary">선택된 단어장 테스트 시작</button>
-  </div>
-
-  <!-- 사운드 -->
-  <audio id="sndPop" src="/audio/pop.mp3" preload="auto"></audio>
-
-  <script src="script.js"></script>
-
+  <script>
+    document.getElementById('lectureBtn').addEventListener('click', () => {
+      window.location.href = 'lecture.html';
+    });
+    document.getElementById('testBtn').addEventListener('click', () => {
+      window.location.href = 'test.html';
+    });
+  </script>
 </body>
 </html>
