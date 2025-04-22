@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>강의용 교안 제작</title>
   <style>
+    :root{
+      --primary:#004c98;   /* 헤더·구분선 짙은 파랑  */
+      --accent:#29a329;    /* 초록 강조 */
+      --border:#1976d2;    /* 파란 라인 */
+      --warn:#ff5252;      /* 경고(빨강) */
+      --bg-card:#fafcff;   /* 박스 배경 */
+      --bg-beige: rgba(255, 247, 230, 0.6);  /* 연한 베이지 반투명 배경 */
+      --text:#333;
+    }
+    html{font-size:15px;}
     body {
       font-family: Arial, sans-serif;
       background: #f4f7fa;
@@ -19,10 +29,6 @@
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 24px;
     }
     textarea {
       width: 100%;
@@ -53,13 +59,152 @@
     .section h2 {
       margin-bottom: 12px;
       font-size: 1.2rem;
-      border-bottom: 2px solid #3498db;
+      border-bottom: 2px solid var(--border);
       padding-bottom: 4px;
     }
-    .section ul {
-      list-style: disc inside;
-      padding-left: 16px;
+    /* 헤더 띠 */
+    header.lesson-header{
+      display:flex;justify-content:space-between;align-items:center;
+      background:var(--primary);color:#fff;padding:10px 16px;margin:-20px -20px 24px;
+      border-top-left-radius:8px;border-top-right-radius:8px;
     }
+    header.lesson-header .center{font-size:20pt;font-weight:700;text-align:center;line-height:1.2}
+    header.lesson-header small{font-size:11pt;font-weight:400}
+    header.lesson-header .left,header.lesson-header .right{font-size:12pt;font-weight:600}
+    header.lesson-header .left{display:flex;flex-direction:column;gap:2px}
+    /* Pre‑Reading */
+    .pre-reading h2{color:var(--accent);margin-bottom:6px}
+    .tip{
+      background:#fffbe6;
+      border-left:8px solid var(--warn);
+      padding:10px 14px;
+      margin:10px 0;
+      font-size:0.95rem;
+      border-radius:4px;
+    }
+    /* === 결과 섹션 꾸미기 === */
+    .section:not(.pre-reading){
+      margin-top:32px;
+      border-top:3px solid var(--border);       /* 파란 구분선 */
+      padding-top:20px;
+    }
+    .section h2{
+      color:var(--accent);
+      font-size:1.15rem;
+      margin-bottom:12px;
+      border-bottom:2px solid var(--border);
+      padding-bottom:4px;
+    }
+
+
+    /* 4단 요약 문단 */
+    #summary p{margin:6px 0;font-size:0.95rem;}
+
+    /* 핵심 주제 */
+    #themeSection p{margin:4px 0;font-size:0.95rem;}
+
+    /* 직독직해: 단일 컬럼 */
+    #direct {
+      display: block;
+    }
+    #direct p{
+      margin:2px 0;
+      font-size:0.93rem;
+      line-height:1.5;
+    }
+    /* #direct p:nth-child(odd){text-align:right;font-weight:600;color:var(--text);} */
+    /* #direct p:nth-child(even){text-align:left;color:#555;} */
+    
+    /* 직독직해 각 문장 박스 스타일 */
+    .direct-item {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-card);
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .direct-item .eng {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .direct-item .kor {
+      display: block;
+      color: #555;
+      margin-left: 10px;
+      line-height: 1.4;
+    }
+    
+
+    /* 4단 요약 카드 스타일 */
+    #summarySection {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px 20px;
+    }
+    /* 4단 요약을 2열 레이아웃으로 */
+    #summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 20px;
+    }
+    #summary p {
+      margin: 6px 0;
+      line-height: 1.4;
+    }
+
+    /* 핵심 주제 카드 스타일 */
+    #themeSection {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px 20px;
+    }
+    #themeSection p {
+      margin: 8px 0;
+      line-height: 1.5;
+    }
+    #themeSection strong {
+      color: var(--primary);
+    }
+  /* 핵심 단어: 번호 매긴 2열 그리드 카드 */
+  .keywords ul {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    row-gap: 16px;
+    column-gap: 0;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    counter-reset: kw;
+  }
+  .keywords li {
+    counter-increment: kw;
+    background: var(--bg-beige);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px 12px 32px;
+    position: relative;
+  }
+  .keywords li::before {
+    content: counter(kw) ".";
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .keywords li strong {
+    font-weight: 600;
+    color: #000;
+  }
+  .keywords li p {
+    margin: 4px 0;
+    font-size: 0.93rem;
+    line-height: 1.4;
+  }
   </style>
   <!-- jsPDF CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -68,38 +213,63 @@
 </head>
 <body>
   <div class="container">
-      <!-- PDF 출력 범위 시작 -->
-      <div id="pdfContent">
-    <h1>강의용 교안 제작</h1>
+
+    <!-- pdf 헤더 -->
+    <header class="lesson-header">
+      <div class="left">
+        <span class="subject">공통영어1</span>
+        <span class="textbook">YBM(김은형)</span>
+      </div>
+      <div class="center">
+        Lesson&nbsp;1<br><small>Believe&nbsp;That&nbsp;You&nbsp;Can&nbsp;Do&nbsp;Better</small>
+      </div>
+      <div class="right">2024&nbsp;개정</div>
+    </header>
+
+    <!-- Pre‑Reading -->
+    <section class="pre-reading">
+      <h2>Pre‑Reading 본문 내용 확인</h2>
+      <p>본문은 Matthew Syed의 실제 이야기를 바탕으로 성장 사고방식(growth mindset)의 중요성을 강조한 내용입니다.</p>
+      <blockquote class="tip">TIP  Matthew Syed는 평범한 소년에서 영국 국가대표 탁구 선수로 성장했으며, 그 과정에서 겪은 도전과 극복의 경험이 그의 성공을 이끈 핵심 요소였습니다.</blockquote>
+    </section>
+
+    <!-- 지문 입력 섹션 (PDF 제외) -->
     <div class="section">
       <h2>지문 입력</h2>
+      <input id="inputTitle" placeholder="제목(예: Lesson 1 Believe That You Can Do Better)" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid #ccc;border-radius:4px">
       <textarea id="inputText" placeholder="여기에 지문을 붙여넣어 주세요..."></textarea>
       <button id="generateBtn">제작하기</button>
       <button id="downloadPdf" style="display:none">PDF로 다운로드</button>
     </div>
 
-    <div id="keywordsSection" class="section" style="display:none">
-      <h2>핵심 단어</h2>
-      <ul id="keywords"></ul>
-    </div>
+    <!-- PDF 출력 범위 시작 -->
+    <div id="pdfContent">
+      <h2 class="doc-title" id="docTitle" style="text-align:center;font-size:18pt;margin:12px 0 16px;display:none"></h2>
 
-    <div id="summarySection" class="section" style="display:none">
-      <h2>4단 요약</h2>
-      <div id="summary"></div>
-    </div>
-
-    <div id="themeSection" class="section" style="display:none">
-      <h2>핵심 주제</h2>
-      <p><strong>한국어:</strong> <span id="themeK"></span></p>
-      <p><strong>English:</strong> <span id="themeE"></span></p>
-    </div>
-
-    <div id="directSection" class="section" style="display:none">
-      <h2>직독직해</h2>
-      <div id="direct"></div>
-    </div>
+      <div id="keywordsSection" class="section keywords" style="display:none">
+        <h2>핵심 단어</h2>
+        <ul id="keywords"></ul>
       </div>
-      <!-- PDF 출력 범위 끝 -->
+
+      <div id="summarySection" class="section" style="display:none">
+        <h2>4단 요약</h2>
+        <div id="summary"></div>
+      </div>
+
+      <div id="themeSection" class="section" style="display:none">
+        <h2>핵심 주제</h2>
+        <p><strong>주제(한글):</strong> <span id="themeK"></span></p>
+        <p><strong>주제(영어):</strong> <span id="themeE"></span></p>
+      </div>
+
+      <div id="directSection" class="section" style="display:none">
+        <h2>직독직해</h2>
+        <div id="direct"></div>
+      </div>
+
+    </div>
+    <!-- PDF 출력 범위 끝 -->
+
   </div>
 
   <script>
@@ -108,6 +278,7 @@
     const generateBtn = document.getElementById('generateBtn');
     const downloadBtn = document.getElementById('downloadPdf');
     const inputText   = document.getElementById('inputText');
+    const inputTitle  = document.getElementById('inputTitle');
     const keywordsEl  = document.getElementById('keywords');
     const summaryEl   = document.getElementById('summary');
     const themeKEl    = document.getElementById('themeK');
@@ -117,9 +288,12 @@
     const summarySec  = document.getElementById('summarySection');
     const themeSec    = document.getElementById('themeSection');
     const directSec   = document.getElementById('directSection');
+    const docTitleEl  = document.getElementById('docTitle');
 
     generateBtn.addEventListener('click', async () => {
       const text = inputText.value.trim();
+      const title = inputTitle.value.trim();
+      if (!title) return alert('제목을 입력해 주세요.');
       if (!text) return alert('지문을 입력해 주세요.');
       generateBtn.disabled = true;
       generateBtn.textContent = '생성 중...';
@@ -133,6 +307,9 @@
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
         lectureData = data;
+        // 제목 표시
+        docTitleEl.innerText = title;
+        docTitleEl.style.display = '';
 
         // 핵심 단어
         keywordsEl.innerHTML = '';
@@ -159,12 +336,14 @@
         themeSec.style.display = '';
 
         // 직독직해
-        directEl.innerHTML = data.direct.map((o, i) =>
-          `<p>${i+1}. ${o.english}</p><p>${o.korean}</p>`
-        ).join('');
+        directEl.innerHTML = data.direct.map((o, i) => `
+       <div class="direct-item">
+         <p class="eng">${i+1}. ${o.english}</p>
+         <p class="kor">${o.korean}</p>
+       </div>
+     `).join('');
         directSec.style.display = '';
 
-        // PDF 버튼
         downloadBtn.style.display = '';
       } catch (e) {
         alert('오류: ' + e.message);
@@ -177,7 +356,6 @@
 
     downloadBtn.addEventListener('click', () => {
       if (!lectureData) return;
-      // PDF로 변환할 영역 선택 (전체 컨테이너)
       const element = document.getElementById('pdfContent');
       html2pdf()
         .set({
