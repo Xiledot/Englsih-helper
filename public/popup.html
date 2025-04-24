@@ -182,10 +182,13 @@
 
     // 테스트 시작
     startBtn.addEventListener('click', () => {
-      startBtn.style.display = 'none';
+    startBtn.style.display = 'none';
+    runCountdown(() => {
+      countdown.style.display = 'none';
       iv = setInterval(showNext, 7000);
       showNext();
     });
+  });
 
     // 정답 확인
     ansBtn.addEventListener('click', () => {
