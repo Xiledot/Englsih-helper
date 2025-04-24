@@ -133,7 +133,7 @@
       ? storedMeta.subcategories
       : [...new Set(raw.map(o => o.subcategory))];
 
-    let idx = 0, iv;
+    let idx = 0;
     const slide     = document.getElementById('slide'),
           startBtn  = document.getElementById('startTest'),
           ansBtn    = document.getElementById('showAnswers'),
@@ -141,54 +141,36 @@
           sndPop    = document.getElementById('sndPop'),
           countdown = document.getElementById('countdown');
 
-    // 3-2-1 카운트다운
-    function runCountdown(cb) {
-      let count = 3;
-      countdown.textContent = count;
-      countdown.style.display = 'flex';
-      const timer = setInterval(() => {
-        count--;
-        if (count > 0) {
-          countdown.textContent = count;
-        } else {
-          clearInterval(timer);
-          cb && cb();
-        }
-      }, 1000);
-    }
-
-    // 슬라이드 진행 (단어 2초, 검은 화면 5초)
-    function showNext() {
+    function next(idx) {
       if (idx >= list.length) {
-        clearInterval(iv);
         ansBtn.style.display = 'inline-block';
         countdown.style.display = 'none';
         return;
       }
-      // Display the word
+      // Show word with 2-second countdown
       slide.textContent = list[idx].word;
-      // Play sound immediately
+      countdown.textContent = 2;
+      countdown.style.display = 'flex';
       sndPop.currentTime = 0;
       sndPop.play().catch(() => {});
-      // After 2 seconds, clear the word and play sound again
       setTimeout(() => {
+        // After 2s, clear word and start 5-second black screen
         slide.textContent = '';
-        sndPop.currentTime = 0;
-        sndPop.play().catch(() => {});
+        countdown.textContent = 5;
+        countdown.style.display = 'flex';
+        setTimeout(() => {
+          countdown.style.display = 'none';
+          sndPop.currentTime = 0;
+          sndPop.play().catch(() => {});
+          next(idx + 1);
+        }, 5000);
       }, 2000);
-      // Move to next index
-      idx++;
     }
 
-    // 테스트 시작
     startBtn.addEventListener('click', () => {
-    startBtn.style.display = 'none';
-    runCountdown(() => {
-      countdown.style.display = 'none';
-      iv = setInterval(showNext, 7000);
-      showNext();
+      startBtn.style.display = 'none';
+      next(0);
     });
-  });
 
     // 정답 확인
     ansBtn.addEventListener('click', () => {
