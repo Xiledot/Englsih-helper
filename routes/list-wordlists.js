@@ -1,11 +1,11 @@
-// netlify/functions/list-wordlists.js
+// routes/list-wordlists.js
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_KEY
 );
 
-exports.handler = async () => {
+module.exports = async function listWordlists(req, res) {
   try {
     const { data, error } = await supabase
       .from('wordlists')
@@ -21,23 +21,9 @@ exports.handler = async () => {
     //   { category: '교과서', subcategory: '올림포스 1강', title: '단어장A' },
     //   …
     // ]
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-      body: JSON.stringify(data),
-    };
+    res.json(data);
   } catch (err) {
     console.error('list-wordlists error:', err);
-    return {
-      statusCode: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-      body: JSON.stringify({ error: err.message }),
-    };
+    res.status(500).json({ error: err.message });
   }
 };
