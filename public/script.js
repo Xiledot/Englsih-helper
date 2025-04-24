@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveBtn      = document.getElementById('save-wordlist-btn');
   const loadBtn      = document.getElementById('load-wordlists-btn');
   const multiTestBtn = document.getElementById('multi-test-btn');
-  const sndPop       = document.getElementById('sndPop');
+  const popSound     = new Audio('/audio/pop.mp3');
+  popSound.preload = 'auto';
 
   function shuffle(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -144,6 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function openMultiTestPopup() {
+    popSound.currentTime = 0;
+    popSound.play().catch(err => console.error('Sound play failed:', err));
     window.open('popup.html', '_blank');
   }
 });
