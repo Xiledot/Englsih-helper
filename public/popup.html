@@ -141,30 +141,41 @@
           sndPop    = document.getElementById('sndPop'),
           countdown = document.getElementById('countdown');
 
+    function countdownNum(duration, cb) {
+      let cnt = duration;
+      countdown.textContent = cnt;
+      countdown.style.display = 'flex';
+      const timer = setInterval(() => {
+        cnt--;
+        if (cnt > 0) {
+          countdown.textContent = cnt;
+        } else {
+          clearInterval(timer);
+          cb && cb();
+        }
+      }, 1000);
+    }
+
     function next(idx) {
       if (idx >= list.length) {
         ansBtn.style.display = 'inline-block';
         countdown.style.display = 'none';
         return;
       }
-      // Show word with 2-second countdown
+      // Show word and play sound
       slide.textContent = list[idx].word;
-      countdown.textContent = 2;
-      countdown.style.display = 'flex';
       sndPop.currentTime = 0;
       sndPop.play().catch(() => {});
-      setTimeout(() => {
-        // After 2s, clear word and start 5-second black screen
+      // 2s countdown on word
+      countdownNum(2, () => {
         slide.textContent = '';
-        countdown.textContent = 5;
-        countdown.style.display = 'flex';
-        setTimeout(() => {
-          countdown.style.display = 'none';
+        // 5s countdown on blank
+        countdownNum(5, () => {
           sndPop.currentTime = 0;
           sndPop.play().catch(() => {});
           next(idx + 1);
-        }, 5000);
-      }, 2000);
+        });
+      });
     }
 
     startBtn.addEventListener('click', () => {
