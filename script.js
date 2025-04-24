@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const BASE_API = 'https://your-render-app-name.onrender.com/api';
+
   const saveBtn      = document.getElementById('save-wordlist-btn');
   const loadBtn      = document.getElementById('load-wordlists-btn');
   const multiTestBtn = document.getElementById('multi-test-btn');
@@ -35,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return alert('모든 항목을 입력해주세요.');
     }
     try {
-      const res = await fetch('/.netlify/functions/save-wordlist', {
+      const res = await fetch(`${BASE_API}/save-wordlist`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ category: cat, subcategory: sub, title, words })
@@ -55,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 목록 렌더링
   async function renderTree() {
     try {
-      const items = await fetchJSON('/.netlify/functions/list-wordlists');
+      const items = await fetchJSON(`${BASE_API}/list-wordlists`);
       const root = document.getElementById('wordlist-tree');
       root.innerHTML = '';
       const byCat = items.reduce((acc, { category, subcategory, title }) => {
@@ -120,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     for (const el of checkedEls) {
       const title = el.value;
       const arr = await fetchJSON(
-        `/.netlify/functions/get-wordlist?title=${encodeURIComponent(title)}`
+        `${BASE_API}/get-wordlist?title=${encodeURIComponent(title)}`
       );
       arr.forEach(o => {
         allWords.push({
