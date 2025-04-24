@@ -157,7 +157,7 @@
       }, 1000);
     }
 
-    // 슬라이드 진행
+    // 슬라이드 진행 (단어 2초, 검은 화면 5초)
     function showNext() {
       if (idx >= list.length) {
         clearInterval(iv);
@@ -165,22 +165,25 @@
         countdown.style.display = 'none';
         return;
       }
+      // Display the word
       slide.textContent = list[idx].word;
-      runCountdown(() => {
+      // Play sound immediately
+      sndPop.currentTime = 0;
+      sndPop.play().catch(() => {});
+      // After 2 seconds, clear the word and play sound again
+      setTimeout(() => {
         slide.textContent = '';
-        sndPop.currentTime = 0; sndPop.play().catch(() => {});
-        runCountdown(() => {
-          sndPop.currentTime = 0; sndPop.play().catch(() => {});
-        });
-      });
-      sndPop.currentTime = 0; sndPop.play().catch(() => {});
+        sndPop.currentTime = 0;
+        sndPop.play().catch(() => {});
+      }, 2000);
+      // Move to next index
       idx++;
     }
 
     // 테스트 시작
     startBtn.addEventListener('click', () => {
       startBtn.style.display = 'none';
-      iv = setInterval(showNext, 6000);
+      iv = setInterval(showNext, 7000);
       showNext();
     });
 
