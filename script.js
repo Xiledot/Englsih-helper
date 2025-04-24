@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const BASE_API = 'https://your-render-app-name.onrender.com/api';
+  const BASE_API = 'https://abundang.onrender.com/api';
 
   const saveBtn      = document.getElementById('save-wordlist-btn');
   const loadBtn      = document.getElementById('load-wordlists-btn');
