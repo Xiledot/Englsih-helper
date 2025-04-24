@@ -1,11 +1,9 @@
-import OpenAI from 'openai';
+const OpenAI = require('openai');
 const openai = new OpenAI();
 
-export async function handler(event, context) {
+module.exports = async function generateLesson(req, res) {
   try {
-    const { text } = JSON.parse(event.body);
-
-    // 1) 시스템 메시지: 오직 JSON만
+    const { text } = req.body;
     const systemMessage = {
       role: 'system',
       content: `You are an AI assistant that outputs ONLY valid JSON. No additional text or explanation.
@@ -16,35 +14,20 @@ The JSON must be a single object with keys:
 - themeE: string
 - direct: array of objects {english, korean}, one entry for every sentence in the passage in the original order`
     };
-
-    // 2) 유저 메시지
     const userMessage = {
       role: 'user',
       content: `다음 한국어 지문을 분석해 주세요. 지문:
 """${text}"""`,
     };
-
-    // 3) OpenAI 호출
-    const res = await openai.chat.completions.create({
+    const resAI = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [systemMessage, userMessage],
     });
-
-    // 4) JSON 파싱
-    const jsonString = res.choices[0].message.content.trim();
+    const jsonString = resAI.choices[0].message.content.trim();
     const data = JSON.parse(jsonString);
-
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    };
+    return res.json(data);
   } catch (e) {
     console.error('generateLesson error:', e);
-    return {
-      statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: e.message }),
-    };
+    return res.status(500).json({ error: e.message });
   }
-}
+};
