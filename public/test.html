@@ -18,11 +18,12 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
+      display: flex;
+      margin: 0;
+      height: 100vh;
       font-family: 'Inter', sans-serif;
       background: var(--bg-page);
       color: var(--text);
-      padding: 20px;
-      line-height: 1.6;
     }
     h1 { text-align: center; margin-bottom: 20px; font-weight: 600; }
     .card {
@@ -98,10 +99,44 @@
       gap: 8px;
     }
     #wordlist-tree li input[type="checkbox"] { margin: 0; }
+
+    .sidebar {
+      width: 200px;
+      background: var(--bg-card);
+      border-right: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+      padding-top: 40px;
+      box-sizing: border-box;
+    }
+    .sidebar .nav-item {
+      padding: 12px 20px;
+      font-size: 1rem;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .sidebar .nav-item:hover {
+      background: #f0f0f0;
+    }
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      box-sizing: border-box;
+    }
   </style>
 </head>
 <body>
- 
+  <aside class="sidebar">
+    <div class="nav-item" id="navLecture">강의용 교안 제작</div>
+    <div class="nav-item" id="navTest">단어 테스트</div>
+    <div class="nav-item" id="navMainTest">본문 테스트지 제작</div>
+    <div class="nav-item" id="navProblemNoChange">문제 제작 (변형 없음)</div>
+    <div class="nav-item" id="navProblemVariant">문제 제작 (지문 변형)</div>
+    <div class="nav-item" id="navWorkbook">워크북 제작</div>
+    <div class="nav-item" id="navCompare">원문 비교</div>
+  </aside>
+  <main class="main-content">
   <h1>영어 학습 도우미</h1>
  
   <!-- 1. 단어장 저장 -->
@@ -135,6 +170,20 @@
   <audio id="sndPop" src="/audio/pop.mp3" preload="auto"></audio>
  
   <script src="script.js"></script>
- 
+  <script>
+    ['Lecture','Test','MainTest','ProblemNoChange','ProblemVariant','Workbook','Compare']
+      .forEach(key => document.getElementById('nav'+key)
+        .addEventListener('click', () => location.href = '/'+{
+          Lecture:'lecture.html',
+          Test:'test.html',
+          MainTest:'main-test.html',
+          ProblemNoChange:'problem.html',
+          ProblemVariant:'problem-variant.html',
+          Workbook:'workbook.html',
+          Compare:'compare.html'
+        }[key])
+      );
+  </script>
+  </main>
 </body>
 </html>
