@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
     );
     if (!checkedEls.length) return alert('하나 이상 선택해주세요.');
     if (!confirm(
-      `선택된 [${checkedEls.map(el => el.value).join(', ')}] 단어장으로 테스트 시작?`
+      `선택된 [${checkedEls.map(el => el.value).join(', ')}] 단어 테스트를 시작할까요?`
     )) return;
 
     // 선택된 대/중분류만 추출

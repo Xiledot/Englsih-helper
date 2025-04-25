@@ -137,33 +137,30 @@
     <div class="nav-item" id="navCompare">원문 비교</div>
   </aside>
   <main class="main-content">
-  <h1>영어 학습 도우미</h1>
+  <h1>Vocabulary</h1>
  
   <!-- 1. 단어장 저장 -->
   <div class="card">
-    <h2>1. 단어장 저장</h2>
-    <label>대분류
-      <input id="inputCategory" placeholder="교과서, 모의고사 등" />
+    <label>교재 이름
+      <input id="inputCategory" placeholder="EBS 올림포스(2026) 독해의 기본 2" />
     </label>
-    <label>중분류
-      <input id="inputSubcategory" placeholder="올림포스 1강 등" />
+    <label>강의 이름
+      <input id="inputSubcategory" placeholder="UNIT 04" />
     </label>
-    <label>제목
-      <input id="inputTitle" placeholder="올림포스1" />
+    <label>번호 이름
+      <input id="inputTitle" placeholder="04번" />
     </label>
-    <label>단어·뜻 (한 줄에 “단어 뜻”)
       <textarea id="inputWords" rows="5"
         placeholder="importance 중요성&#10;prominence 두드러짐"></textarea>
     </label>
-    <button id="save-wordlist-btn">저장하기</button>
-    <button id="load-wordlists-btn" class="secondary">저장된 목록 불러오기</button>
+    <button id="save-wordlist-btn">단어장 저장</button>
+    <button id="load-wordlists-btn" class="secondary">단어장 불러오기</button>
   </div>
  
   <!-- 2. 단어장 목록 -->
   <div class="card">
-    <h2>2. 단어장 목록</h2>
     <div id="wordlist-tree"></div>
-    <button id="multi-test-btn" class="secondary">선택된 단어장 테스트 시작</button>
+    <button id="multi-test-btn" class="secondary">단어 테스트 시작</button>
   </div>
  
   <!-- 사운드 -->
