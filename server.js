@@ -53,7 +53,7 @@ app.post('/api/main-test', async (req, res) => {
     res.json({ questions });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'OpenAI API 오류' });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -76,7 +76,7 @@ ${text}
 Return a JSON array of objects: { id, question, note }.
 `;
     const completion = await openaiApi.createChatCompletion({
-      model: 'gpt-4o-mini',
+      model: 'gpt-3.5-turbo',
       messages: [
         { role: 'system', content: 'You are a helpful language test generator.' },
         { role: 'user', content: prompt }
@@ -94,7 +94,7 @@ Return a JSON array of objects: { id, question, note }.
     res.json({ items });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'AI 생성 오류' });
+    res.status(500).json({ error: err.message });
   }
 });
 
