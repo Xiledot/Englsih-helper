@@ -71,6 +71,7 @@
     header.lesson-header small{font-size:11pt;font-weight:400}
     header.lesson-header .left,header.lesson-header .right{font-size:12pt;font-weight:600}
     header.lesson-header .left{display:flex;flex-direction:column;gap:2px}
+    .page-break { page-break-after: always; }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
@@ -105,11 +106,13 @@
     </div>
 
     <div id="pdfContent">
-      <h2 class="doc-title" id="docTitle" style="text-align:center;font-size:18pt;margin:12px 0 16px;display:none"></h2>
++     <div class="page-break">
       <div id="keywordsSection" class="section keywords" style="display:none">
         <h2>핵심 단어</h2>
         <ul id="keywords"></ul>
       </div>
++     </div>
++     <div class="page-break">
       <div id="summarySection" class="section" style="display:none">
         <h2>4단 요약</h2>
         <div id="summary"></div>
@@ -119,6 +122,7 @@
         <p><strong>주제(한글):</strong> <span id="themeK"></span></p>
         <p><strong>주제(영어):</strong> <span id="themeE"></span></p>
       </div>
++     </div>
       <div id="directSection" class="section" style="display:none">
         <h2>직독직해</h2>
         <div id="direct"></div>
@@ -165,9 +169,19 @@
         docTitleEl.style.display = '';
 
         keywordsEl.innerHTML = '';
++       const posMap = { noun: '명', adjective: '형', verb: '동', adverb: '부' };
         data.keywords.forEach(item => {
           const li = document.createElement('li');
-          li.innerHTML = `<strong>${item.word}</strong> (${item.meaning})<br>동의어: ${item.synonyms.join(', ')}<br>반의어: ${item.antonyms.join(', ')}`;
+-          li.innerHTML = `<strong>${item.word}</strong> (${item.meaning})<br>동의어: ${item.synonyms.join(', ')}<br>반의어: ${item.antonyms.join(', ')}`;
++         const abbr = item.partOfSpeech
++           ? ` (${posMap[item.partOfSpeech] || item.partOfSpeech[0]})`
++           : '';
++         li.innerHTML = `
++           <label><input type="checkbox"> ${item.word}${abbr}</label>
++           <div style="font-size:0.9em; margin-left:1.2em;">
++             <div>Synonyms: ${item.synonyms.join(', ')}</div>
++             <div>Antonyms: ${item.antonyms.join(', ')}</div>
++           </div>`;
           keywordsEl.appendChild(li);
         });
         keywordsSec.style.display = '';
