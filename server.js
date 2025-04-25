@@ -57,6 +57,47 @@ app.post('/api/main-test', async (req, res) => {
   }
 });
 
+// 지문 기반 문장 테스트지 생성 엔드포인트
+app.post('/api/sentence-test', async (req, res) => {
+  const { text } = req.body;
+  if (!text) {
+    return res.status(400).json({ error: '지문을 입력하세요.' });
+  }
+  try {
+    const prompt = `
+Generate 10 sentence completion questions from the following passage. 
+Each question should include blanks marked as [빈칸], 
+with two choices in brackets like [choice1 / choice2], 
+and optionally a brief note in parentheses.
+Passage:
+---
+${text}
+---
+Return a JSON array of objects: { id, question, note }.
+`;
+    const completion = await openaiApi.createChatCompletion({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'You are a helpful language test generator.' },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: 1500
+    });
+    const raw = completion.data.choices[0].message.content;
+    let items;
+    try {
+      items = JSON.parse(raw);
+    } catch (parseErr) {
+      console.error('JSON parse error in sentence-test:', parseErr, 'Content:', raw);
+      return res.status(500).json({ error: '응답 파싱 실패', raw });
+    }
+    res.json({ items });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'AI 생성 오류' });
+  }
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 const PORT = process.env.PORT || 3000;
