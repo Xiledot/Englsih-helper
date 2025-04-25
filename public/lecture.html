@@ -73,6 +73,18 @@
     header.lesson-header .left,header.lesson-header .right{font-size:12pt;font-weight:600}
     header.lesson-header .left{display:flex;flex-direction:column;gap:2px}
     .page-break { page-break-after: always; }
+    /* Direct translation page */
+    .direct-item {
+      margin-bottom: 16px;
+    }
+    .direct-item .eng {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .direct-item .kor {
+      margin-left: 12px;
+      color: #555;
+    }
     .sidebar {
       width: 200px;
       background: var(--bg-card);
@@ -96,6 +108,19 @@
       overflow-y: auto;
       padding: 20px;
       box-sizing: border-box;
+    }
+    /* Arrange VOCA list in a 4-column grid to fit 60 items on one page */
+    #keywordsSection ul {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px 16px;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      page-break-inside: avoid;
+    }
+    #keywordsSection ul li {
+      break-inside: avoid;
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -141,23 +166,22 @@
     </div>
 
     <div id="pdfContent">
-+     <div class="page-break">
       <div id="keywordsSection" class="section keywords" style="display:none">
-        <h2>핵심 단어</h2>
+        <h2>VOCA</h2>
         <ul id="keywords"></ul>
       </div>
-+     </div>
-+     <div class="page-break">
-      <div id="summarySection" class="section" style="display:none">
-        <h2>4단 요약</h2>
-        <div id="summary"></div>
+      <div class="page-break">
+        <div id="summarySection" class="section" style="display:none">
+          <h2>4단 요약</h2>
+          <div id="summary"></div>
+        </div>
+        <div id="themeSection" class="section" style="display:none">
+          <h2>핵심 주제</h2>
+          <p><strong>주제(한글):</strong> <span id="themeK"></span></p>
+          <p><strong>주제(영어):</strong> <span id="themeE"></span></p>
+        </div>
       </div>
-      <div id="themeSection" class="section" style="display:none">
-        <h2>핵심 주제</h2>
-        <p><strong>주제(한글):</strong> <span id="themeK"></span></p>
-        <p><strong>주제(영어):</strong> <span id="themeE"></span></p>
-      </div>
-+     </div>
+      <div class="page-break"></div>
       <div id="directSection" class="section" style="display:none">
         <h2>직독직해</h2>
         <div id="direct"></div>
@@ -203,19 +227,18 @@
         docTitleEl.style.display = '';
 
         keywordsEl.innerHTML = '';
-+       const posMap = { noun: '명', adjective: '형', verb: '동', adverb: '부' };
+        const posMap = { noun: '명', adjective: '형', verb: '동', adverb: '부' };
         data.keywords.forEach(item => {
           const li = document.createElement('li');
--          li.innerHTML = `<strong>${item.word}</strong> (${item.meaning})<br>동의어: ${item.synonyms.join(', ')}<br>반의어: ${item.antonyms.join(', ')}`;
-+         const abbr = item.partOfSpeech
-+           ? ` (${posMap[item.partOfSpeech] || item.partOfSpeech[0]})`
-+           : '';
-+         li.innerHTML = `
-+           <label><input type="checkbox"> ${item.word}${abbr}</label>
-+           <div style="font-size:0.9em; margin-left:1.2em;">
-+             <div>Synonyms: ${item.synonyms.join(', ')}</div>
-+             <div>Antonyms: ${item.antonyms.join(', ')}</div>
-+           </div>`;
+          const abbr = item.partOfSpeech
+            ? ` (${posMap[item.partOfSpeech] || item.partOfSpeech[0]})`
+            : '';
+          li.innerHTML = `
+            <label><input type="checkbox"> ${item.word}${abbr}</label>
+            <div style="font-size:0.9em; margin-left:1.2em;">
+              <div>Synonyms: ${item.synonyms.join(', ')}</div>
+              <div>Antonyms: ${item.antonyms.join(', ')}</div>
+            </div>`;
           keywordsEl.appendChild(li);
         });
         keywordsSec.style.display = '';
