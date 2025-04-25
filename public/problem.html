@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>문제 제작 (변형 없음)</title>
+  <style>
+    body { display: flex; margin: 0; height: 100vh; font-family: Arial, sans-serif; background: #f4f7fa; }
+    .sidebar { width:200px; background:#fff; border-right:1px solid #ddd; display:flex; flex-direction:column; padding-top:40px; box-sizing:border-box; }
+    .sidebar .nav-item { padding:12px 20px; font-size:1rem; color:#333; cursor:pointer; }
+    .sidebar .nav-item:hover { background:#f0f0f0; }
+    .main-content { flex:1; display:flex; flex-direction:column; align-items:center; padding:20px 40px; box-sizing:border-box; }
+    textarea, input { width:100%; max-width:600px; margin-bottom:16px; }
+    button { padding:12px 24px; font-size:1rem; border:none; border-radius:6px; background:#3498db; color:#fff; cursor:pointer; transition:background .2s; }
+    button:hover { background:#2980b9; }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="nav-item" id="navLecture">강의용 교안 제작</div>
+    <div class="nav-item" id="navTest">단어 테스트</div>
+    <div class="nav-item" id="navMainTest">본문 테스트지 제작</div>
+    <div class="nav-item" id="navProblemNoChange">문제 제작 (변형 없음)</div>
+    <div class="nav-item" id="navProblemVariant">문제 제작 (지문 변형)</div>
+    <div class="nav-item" id="navWorkbook">워크북 제작</div>
+    <div class="nav-item" id="navCompare">원문 비교</div>
+  </aside>
+  <main class="main-content">
+    <h1>문제 제작 (변형 없음)</h1>
+    <textarea id="sourceText" rows="8" placeholder="원문 지문을 붙여넣으세요"></textarea>
+    <button id="generateProblem">문제 생성</button>
+  </main>
+  <script>
+    // 네비게이션
+    ['Lecture','Test','MainTest','ProblemNoChange','ProblemVariant','Workbook','Compare']
+      .forEach(key => document.getElementById('nav'+key)
+        .addEventListener('click', () => location.href = '/'+{
+          Lecture:'lecture.html',
+          Test:'test.html',
+          MainTest:'main-test.html',
+          ProblemNoChange:'problem.html',
+          ProblemVariant:'problem-variant.html',
+          Workbook:'workbook.html',
+          Compare:'compare.html'
+        }[key])
+      );
+    // 문제 생성
+    document.getElementById('generateProblem').addEventListener('click', () => {
+      const text = document.getElementById('sourceText').value;
+      console.log('문제 제작 (변형 없음):', text);
+      // TODO: API 호출 로직
+    });
+  </script>
+</body>
+</html>

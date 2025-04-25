@@ -9,6 +9,13 @@ const listWordlists = require('./routes/list-wordlists');
 const getWordlist   = require('./routes/get-wordlist');
 const generateLesson = require('./routes/generateLesson');
 
+// OpenAI 클라이언트 설정
+const { Configuration, OpenAIApi } = require('openai');
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openaiApi = new OpenAIApi(configuration);
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -16,7 +23,40 @@ app.use(express.json());
 app.post('/api/save-wordlist',  saveWordlist);
 app.get( '/api/list-wordlists', listWordlists);
 app.get( '/api/get-wordlist',   getWordlist);
+
 app.post('/api/generate-lesson', generateLesson);
+
+// 본문 테스트지 생성 엔드포인트
+app.post('/api/main-test', async (req, res) => {
+  const { text } = req.body;
+  if (!text) {
+    return res.status(400).json({ error: '텍스트를 입력하세요.' });
+  }
+  try {
+    const completion = await openaiApi.createChatCompletion({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: '주어진 지문에서 객관식 및 빈칸 문제 5개를 JSON 배열 형태로 생성하세요.' },
+        { role: 'user', content: text },
+      ],
+      max_tokens: 1024,
+    });
+    const content = completion.data.choices[0].message.content;
+    let questions;
+    try {
+      questions = JSON.parse(content);
+    } catch {
+      questions = content
+        .split('\n')
+        .filter(line => line.trim())
+        .map(line => line.trim());
+    }
+    res.json({ questions });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'OpenAI API 오류' });
+  }
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 

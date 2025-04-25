@@ -5,36 +5,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>학습 도우미 홈</title>
   <style>
-    body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: Arial, sans-serif; background: #f4f7fa; }
-    .container { text-align: center; }
-    h1 { margin-bottom: 40px; }
-    button { 
-      padding: 16px 32px; 
-      margin: 0 16px; 
-      font-size: 1.2rem; 
-      border: none; 
-      border-radius: 8px; 
-      background: #3498db; 
-      color: #fff; 
-      cursor: pointer; 
-      transition: background .2s; 
+    body {
+      display: flex;
+      margin: 0;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #f4f7fa;
     }
-    button:hover { background: #2980b9; }
+    .sidebar {
+      width: 200px;
+      background: #ffffff;
+      border-right: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+      padding-top: 40px;
+      box-sizing: border-box;
+    }
+    .sidebar .nav-item {
+      padding: 12px 20px;
+      font-size: 1rem;
+      color: #333;
+      cursor: pointer;
+    }
+    .sidebar .nav-item:hover {
+      background: #f0f0f0;
+    }
+    .main-content {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 40px;
+      box-sizing: border-box;
+    }
+    .container {
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 40px;
+    }
+    button {
+      padding: 16px 32px;
+      margin: 0 16px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 8px;
+      background: #3498db;
+      color: #fff;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    button:hover {
+      background: #2980b9;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>학습 도우미</h1>
-    <button id="lectureBtn">강의용 교안 제작</button>
-    <button id="testBtn">단어 테스트</button>
-  </div>
-  <script>
-    document.getElementById('lectureBtn').addEventListener('click', () => {
-      window.location.href = '/lecture.html';
-    });
-    document.getElementById('testBtn').addEventListener('click', () => {
-      window.location.href = '/test.html';
-    });
-  </script>
+  <aside class="sidebar">
+    <div class="nav-item" id="navLecture">강의용 교안 제작</div>
+    <div class="nav-item" id="navTest">단어 테스트</div>
+    <div class="nav-item" id="navMainTest">본문 테스트지 제작</div>
+    <div class="nav-item" id="navProblemNoChange">문제 제작 (변형 없음)</div>
+    <div class="nav-item" id="navProblemVariant">문제 제작 (지문 변형)</div>
+    <div class="nav-item" id="navWorkbook">워크북 제작</div>
+    <div class="nav-item" id="navCompare">원문 비교</div>
+  </aside>
+  <main class="main-content">
+    <div class="container">
+      <h1>학습 도우미</h1>
+      <button id="lectureBtn">강의용 교안 제작</button>
+      <button id="testBtn">단어 테스트</button>
+    </div>
+    <script>
+      // 하단 버튼들 이동 기능
+      document.getElementById('lectureBtn').addEventListener('click', () => {
+        window.location.href = '/lecture.html';
+      });
+      document.getElementById('testBtn').addEventListener('click', () => {
+        window.location.href = '/test.html';
+      });
+      // 사이드바 메뉴 이동 기능
+      document.getElementById('navLecture').addEventListener('click', () => { window.location.href = '/lecture.html'; });
+      document.getElementById('navTest').addEventListener('click', () => { window.location.href = '/test.html'; });
+      document.getElementById('navMainTest').addEventListener('click', () => { window.location.href = '/main-test.html'; });
+      document.getElementById('navProblemNoChange').addEventListener('click', () => { window.location.href = '/problem.html'; });
+      document.getElementById('navProblemVariant').addEventListener('click', () => { window.location.href = '/problem-variant.html'; });
+      document.getElementById('navWorkbook').addEventListener('click', () => { window.location.href = '/workbook.html'; });
+      document.getElementById('navCompare').addEventListener('click', () => { window.location.href = '/compare.html'; });
+    </script>
+  </main>
 </body>
 </html>
