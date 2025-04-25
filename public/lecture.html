@@ -139,6 +139,18 @@
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
 
+        const {
+          keywords = [],
+          summary: summaryList = [],
+          themes = [],
+          direct: directList = []
+        } = data;
+
+        if (!Array.isArray(keywords)) {
+          alert('단어 목록을 불러올 수 없습니다.');
+          return;
+        }
+
         // Populate PDF content:
         document.getElementById('docTitle').innerText = title;
         document.getElementById('docSubtitle').innerText = subtitle;
@@ -146,7 +158,7 @@
         // VOCA
         const keywordsEl = document.getElementById('keywords');
         keywordsEl.innerHTML = '';
-        data.keywords.forEach(item => {
+        keywords.forEach(item => {
           const li = document.createElement('li');
           li.innerHTML = `
             <label><input type="checkbox"> ${item.word}</label>
@@ -154,19 +166,19 @@
           keywordsEl.appendChild(li);
         });
         // Summary
-        document.getElementById('summary').innerHTML = data.summary.map((s,i) => `<p>${i+1}. ${s}</p>`).join('');
+        document.getElementById('summary').innerHTML = summaryList.map((s,i) => `<p>${i+1}. ${s}</p>`).join('');
         // Themes
         const themeGrid = document.getElementById('pdfThemeGrid');
         themeGrid.innerHTML = '';
         themeGrid.removeAttribute('style');
-        data.themes.forEach(t => {
+        themes.forEach(t => {
           const div = document.createElement('div');
           div.className = 'theme-item';
           div.textContent = t;
           themeGrid.appendChild(div);
         });
         // Direct
-        document.getElementById('direct').innerHTML = data.direct.map((o,i) => `
+        document.getElementById('direct').innerHTML = directList.map((o,i) => `
           <div class="direct-item">
             <p class="eng">${i+1}. ${o.english}</p>
             <p class="kor">${o.korean}</p>
