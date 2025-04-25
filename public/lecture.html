@@ -252,7 +252,6 @@
         <div class="center">
           Lesson&nbsp;1<br><small>Believe&nbsp;That&nbsp;You&nbsp;Can&nbsp;Do&nbsp;Better</small>
         </div>
-        <div class="right">2024&nbsp;개정</div>
       </header>
 
       <section class="pre-reading">
@@ -266,6 +265,8 @@
       <div class="section">
         <h2>지문 입력</h2>
         <input id="inputTitle" placeholder="제목(예: Lesson 1 Believe That You Can Do Better)" />
+        <input id="inputSubtitle" placeholder="부제목 (예: Believe That You Can Do Better)" />
+        <input id="inputRange" placeholder="범위 (예: p.10-12)" />
         <textarea id="inputText" placeholder="여기에 지문을 붙여넣어 주세요..."></textarea>
         <button type="button" id="generateBtn">제작하기</button>
         <button type="button" id="downloadPdf" style="display:none">PDF로 다운로드</button>
@@ -273,7 +274,9 @@
 
       <div id="pdfContent" style="display:none">
         <!-- Title -->
-        <h1 id="docTitle" style="text-align:center; margin-bottom:16px;"></h1>
+        <h1 id="docTitle" style="text-align:center; margin-bottom:4px; font-size:24pt; font-weight:700;"></h1>
+        <h3 id="docSubtitle" style="text-align:center; margin:0 0 8px; font-size:14pt; font-weight:600;"></h3>
+        <p id="docRange" style="text-align:center; margin:0 0 16px; font-size:10pt;"></p>
 
         <!-- VOCA -->
         <div id="keywordsSection" class="section keywords">
@@ -308,6 +311,8 @@
       const downloadBtn = document.getElementById('downloadPdf');
       const inputText   = document.getElementById('inputText');
       const inputTitle  = document.getElementById('inputTitle');
+      const inputSubtitle = document.getElementById('inputSubtitle');
+      const inputRange    = document.getElementById('inputRange');
       const keywordsEl  = document.getElementById('keywords');
       const summaryEl   = document.getElementById('summary');
       const themeKEl    = document.getElementById('themeK');
@@ -318,6 +323,8 @@
       const themeSec    = document.getElementById('themeSection');
       const directSec   = document.getElementById('directSection');
       const docTitleEl  = document.getElementById('docTitle');
+      const docSubtitleEl = document.getElementById('docSubtitle');
+      const docRangeEl    = document.getElementById('docRange');
       let lectureData   = null;
 
       generateBtn.addEventListener('click', async () => {
@@ -342,6 +349,8 @@
           // Title
           docTitleEl.innerText = title;
           docTitleEl.parentElement.style.display = '';
+          docSubtitleEl.innerText = inputSubtitle.value.trim();
+          docRangeEl.innerText    = inputRange.value.trim();
 
           // VOCA
           keywordsEl.innerHTML = '';
@@ -358,8 +367,8 @@
             li.innerHTML = `
               <label><input type="checkbox"> <span class="chip ${chipClass}">${abbr.replace(/[^가-힣A-Za-z]/g,'')}</span>${item.word}</label>
               <div style="font-size:0.8em; margin-left:1.4em;">
-                <span class="syn-label">Syn:</span> ${item.synonyms.join(', ')}<br>
-                <span class="ant-label">Ant:</span> ${item.antonyms.join(', ')}
+                <span class="syn-label">[동의어]</span> ${item.synonyms.join(', ')}<br>
+                <span class="ant-label">[반의어]</span> ${item.antonyms.join(', ')}
               </div>`;
             keywordsEl.appendChild(li);
           });
