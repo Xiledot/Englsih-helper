@@ -4,12 +4,12 @@ const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-const saveWordlist  = require('./routes/save-wordlist');
-const listWordlists = require('./routes/list-wordlists');
-const getWordlist   = require('./routes/get-wordlist');
+const saveWordlist   = require('./routes/save-wordlist');
+const listWordlists  = require('./routes/list-wordlists');
+const getWordlist    = require('./routes/get-wordlist');
 const generateLesson = require('./routes/generateLesson');
 
-// OpenAI 클라이언트 설정
+// OpenAI 클라이언트 설정 (V4)
 const OpenAI = require('openai');
 const openaiApi = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -19,18 +19,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// 기존 워드리스트 & 레슨 생성 라우트
 app.post('/api/save-wordlist',  saveWordlist);
 app.get( '/api/list-wordlists', listWordlists);
 app.get( '/api/get-wordlist',   getWordlist);
-
 app.post('/api/generate-lesson', generateLesson);
 
-// 본문 테스트지 생성 엔드포인트
+// 본문 테스트지 제작 엔드포인트
 app.post('/api/main-test', async (req, res) => {
   const { text } = req.body;
-  if (!text) {
-    return res.status(400).json({ error: '텍스트를 입력하세요.' });
-  }
+  if (!text) return res.status(400).json({ error: '텍스트를 입력하세요.' });
   try {
     const completion = await openaiApi.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -40,7 +38,7 @@ app.post('/api/main-test', async (req, res) => {
       ],
       max_tokens: 1024,
     });
-    const content = completion.data.choices[0].message.content;
+    const content = completion.choices[0].message.content;
     let questions;
     try {
       questions = JSON.parse(content);
@@ -60,9 +58,7 @@ app.post('/api/main-test', async (req, res) => {
 // 지문 기반 문장 테스트지 생성 엔드포인트
 app.post('/api/sentence-test', async (req, res) => {
   const { text } = req.body;
-  if (!text) {
-    return res.status(400).json({ error: '지문을 입력하세요.' });
-  }
+  if (!text) return res.status(400).json({ error: '지문을 입력하세요.' });
   try {
     const prompt = `
 Generate 10 sentence completion questions from the following passage. 
@@ -81,9 +77,10 @@ Return a JSON array of objects: { id, question, note }.
         { role: 'system', content: 'You are a helpful language test generator.' },
         { role: 'user', content: prompt }
       ],
-      max_tokens: 1500
+      max_tokens: 1500,
+      temperature: 0.7
     });
-    const raw = completion.data.choices[0].message.content;
+    const raw = completion.choices[0].message.content;
     let items;
     try {
       items = JSON.parse(raw);
@@ -98,6 +95,7 @@ Return a JSON array of objects: { id, question, note }.
   }
 });
 
+// 정적 파일 서비스
 app.use(express.static(path.join(__dirname, 'public')));
 
 const PORT = process.env.PORT || 3000;
