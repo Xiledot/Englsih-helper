@@ -13,6 +13,8 @@
       --bg-card: #fafcff;
       --bg-beige: rgba(255, 247, 230, 0.6);
       --text: #333;
+      --accent2: #ffb300;  /* yellow chip */
+      --accent3: #ef5350;  /* coral chip */
     }
     html { font-size: 15px; }
     body {
@@ -76,7 +78,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: var(--primary);
+      background: linear-gradient(90deg, var(--primary) 0%, var(--border) 100%);
       color: #fff;
       padding: 10px 16px;
       margin: -20px -20px 24px;
@@ -146,9 +148,64 @@
       page-break-after: always;
     }
 
+    /* VOCA item card */
+    #keywordsSection ul li{
+      background:#fafafa;
+      border:1px solid #e1e1e1;
+      border-radius:4px;
+      padding:4px 6px;
+      font-size:0.9rem;
+    }
+    #keywordsSection ul li label{
+      font-weight:600;
+    }
+    .chip{
+      display:inline-block;
+      font-size:0.7rem;
+      font-weight:700;
+      color:#fff;
+      padding:0 4px;
+      border-radius:3px;
+      margin-right:4px;
+    }
+    .chip-n{background:var(--accent2);}
+    .chip-v{background:#42a5f5;}
+    .chip-adj{background:var(--accent);}
+    .chip-adv{background:#ab47bc;}
+    .syn-label{color:var(--accent);font-size:0.75rem;margin-right:2px;}
+    .ant-label{color:var(--warn);font-size:0.75rem;margin-right:2px;}
+
     /* Summary/Theme page */
     #summarySection {
       page-break-before: always;
+    }
+
+    /* summary step bullets */
+    #summarySection p{
+      position:relative;
+      padding-left:22px;
+    }
+    #summarySection p::before{
+      content:'●';
+      position:absolute;
+      left:0;
+      color:var(--border);
+    }
+
+    /* Theme card grid */
+    .theme-grid{
+      display:grid;
+      grid-template-columns:120px 1fr;
+      gap:8px;
+      background:#f9f9ff;
+      border:1px solid #d0d0ff;
+      border-radius:6px;
+      padding:8px 12px;
+      max-width:500px;
+    }
+    .theme-grid .label{
+      font-weight:700;
+      color:var(--accent3);
     }
 
     /* Direct translation styling */
@@ -162,6 +219,11 @@
     .direct-item .kor {
       margin-left: 12px;
       color: #555;
+    }
+    .direct-item:nth-child(even){
+      background:var(--bg-beige);
+      border-radius:4px;
+      padding:4px;
     }
   </style>
 
@@ -226,8 +288,10 @@
         </div>
         <div id="themeSection" class="section" style="display:none">
           <h2>핵심 주제</h2>
-          <p><strong>주제(한글):</strong> <span id="themeK"></span></p>
-          <p><strong>주제(영어):</strong> <span id="themeE"></span></p>
+          <div class="theme-grid">
+            <span class="label">Theme‑KOR</span><span id="themeK"></span>
+            <span class="label">Theme‑ENG</span><span id="themeE"></span>
+          </div>
         </div>
 
         <!-- Direct -->
@@ -285,11 +349,17 @@
           data.keywords.forEach(item => {
             const li = document.createElement('li');
             const abbr = item.partOfSpeech ? ` (${posMap[item.partOfSpeech]||item.partOfSpeech[0]})` : '';
+            const chipClass = {
+              noun:'chip-n',
+              verb:'chip-v',
+              adjective:'chip-adj',
+              adverb:'chip-adv'
+            }[item.partOfSpeech] || 'chip-n';
             li.innerHTML = `
-              <label><input type="checkbox"> ${item.word}${abbr}</label>
-              <div style="font-size:0.9em; margin-left:1.2em;">
-                <div>Synonyms: ${item.synonyms.join(', ')}</div>
-                <div>Antonyms: ${item.antonyms.join(', ')}</div>
+              <label><input type="checkbox"> <span class="chip ${chipClass}">${abbr.replace(/[^가-힣A-Za-z]/g,'')}</span>${item.word}</label>
+              <div style="font-size:0.8em; margin-left:1.4em;">
+                <span class="syn-label">Syn:</span> ${item.synonyms.join(', ')}<br>
+                <span class="ant-label">Ant:</span> ${item.antonyms.join(', ')}
               </div>`;
             keywordsEl.appendChild(li);
           });
