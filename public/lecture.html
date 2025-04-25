@@ -106,6 +106,13 @@
   /* 보조 섹션 컬럼 조정 */
   .aside-section .word-list { grid-template-columns: 1fr; gap: 6px; }
   .aside-section .defs { grid-template-columns: 1fr; margin-left: 20px; }
+
+  /* 좌측 단어, 우측 정의 레이아웃 맞춤 */
+  .word-list li { align-items:flex-start; }
+  .defs li      { align-items:flex-start; }
+
+  /* 퀄리티 향상: 단어 체크박스 y‑offset 보정 */
+  .word-list input { margin-top:0; }
 </style>
 </head>
 <body>
@@ -142,23 +149,40 @@
               <section class="section">
                 <h2>Vocabulary</h2>
                 <ul class="word-list" id="keywords"></ul>
-                <ul class="defs" id="definitions"></ul>
               </section>
             </main>
+            <aside>
+              <section class="section aside-section">
+                <h2 style="visibility:hidden">Definitions</h2>
+                <ul class="defs" id="definitions"></ul>
+              </section>
+            </aside>
           </div>
         </div>
       </div>
-      <div class="pdf-section" id="summarySection" style="display:none;">
-        <h3>Summary</h3>
-        <div id="summary"></div>
+      <div class="page-container" id="summarySection" style="display:none;">
+        <div class="page" style="grid-template-columns:1fr;">
+          <main style="grid-column:1; padding:40px;">
+            <section class="section">
+              <h2>Summary</h2>
+              <div id="summary"></div>
+            </section>
+            <section class="section">
+              <h2>Themes</h2>
+              <div class="theme-grid" id="pdfThemeGrid"></div>
+            </section>
+          </main>
+        </div>
       </div>
-      <div class="pdf-section" id="themeSection" style="display:none;">
-        <h3>Themes</h3>
-        <div class="theme-grid" id="pdfThemeGrid"></div>
-      </div>
-      <div class="pdf-section" id="directSection" style="display:none;">
-        <h3>Direct Section</h3>
-        <div id="direct"></div>
+      <div class="page-container" id="directSection" style="display:none;">
+        <div class="page" style="grid-template-columns:1fr;">
+          <main style="grid-column:1; padding:40px;">
+            <section class="section">
+              <h2>Direct Section</h2>
+              <div id="direct"></div>
+            </section>
+          </main>
+        </div>
       </div>
     </div>
   </div>
