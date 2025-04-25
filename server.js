@@ -32,7 +32,7 @@ app.post('/api/main-test', async (req, res) => {
     return res.status(400).json({ error: '텍스트를 입력하세요.' });
   }
   try {
-    const completion = await openaiApi.createChatCompletion({
+    const completion = await openaiApi.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: '주어진 지문에서 객관식 및 빈칸 문제 5개를 JSON 배열 형태로 생성하세요.' },
@@ -75,7 +75,7 @@ ${text}
 ---
 Return a JSON array of objects: { id, question, note }.
 `;
-    const completion = await openaiApi.createChatCompletion({
+    const completion = await openaiApi.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         { role: 'system', content: 'You are a helpful language test generator.' },
