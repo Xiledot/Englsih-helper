@@ -1,434 +1,248 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>강의용 교안 제작</title>
+  <title>Lecture Page</title>
   <style>
-    :root {
-      --primary: #004c98;
-      --accent: #29a329;
-      --border: #1976d2;
-      --warn: #ff5252;
-      --bg-card: #fafcff;
-      --bg-beige: rgba(255, 247, 230, 0.6);
-      --text: #333;
-      --accent2: #ffb300;  /* yellow chip */
-      --accent3: #ef5350;  /* coral chip */
-    }
-    html { font-size: 15px; }
     body {
       font-family: Arial, sans-serif;
-      background: #f4f7fa;
-      color: #333;
-      display: flex;
       margin: 0;
+      display: flex;
       height: 100vh;
     }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      background: #fff;
+    .sidebar {
+      width: 250px;
+      background-color: #2c3e50;
+      color: white;
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-sizing: border-box;
     }
-    textarea {
+    .sidebar h2 {
+      margin-top: 0;
+    }
+    .sidebar input, .sidebar textarea {
       width: 100%;
-      height: 200px;
-      padding: 12px;
-      font-size: 1rem;
-      border: 1px solid #ccc;
+      margin-bottom: 15px;
+      padding: 8px;
+      box-sizing: border-box;
       border-radius: 4px;
-      resize: vertical;
+      border: none;
     }
-    input, button {
-      font-size: 1rem;
-    }
-    input#inputTitle {
+    .sidebar button {
       width: 100%;
       padding: 10px;
-      margin-bottom: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    button {
-      display: inline-block;
-      margin: 12px 6px 24px;
-      padding: 12px 24px;
+      background-color: #2980b9;
       border: none;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
       border-radius: 4px;
-      background: #3498db;
-      color: #fff;
-      cursor: pointer;
     }
-    button:hover {
-      background: #2980b9;
+    .sidebar button:hover {
+      background-color: #3498db;
     }
-    .section {
-      margin-bottom: 24px;
-    }
-    .section h2 {
-      margin-bottom: 12px;
-      font-size: 1.2rem;
-      border-bottom: 2px solid var(--border);
-      padding-bottom: 4px;
-    }
-    header.lesson-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: linear-gradient(90deg, var(--primary) 0%, var(--border) 100%);
-      color: #fff;
-      padding: 10px 16px;
-      margin: -20px -20px 24px;
-      border-top-left-radius: 8px;
-      border-top-right-radius: 8px;
-    }
-    header.lesson-header .center {
-      font-size: 20pt;
-      font-weight: 700;
-      text-align: center;
-      line-height: 1.2;
-    }
-    header.lesson-header small {
-      font-size: 11pt;
-      font-weight: 400;
-    }
-    header.lesson-header .left,
-    header.lesson-header .right {
-      font-size: 12pt;
-      font-weight: 600;
-    }
-    header.lesson-header .left {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .sidebar {
-      width: 200px;
-      background: var(--bg-card);
-      border-right: 1px solid #ddd;
-      display: flex;
-      flex-direction: column;
-      padding-top: 40px;
-      box-sizing: border-box;
-    }
-    .sidebar .nav-item {
-      padding: 12px 20px;
-      font-size: 1rem;
-      color: var(--text);
-      cursor: pointer;
-    }
-    .sidebar .nav-item:hover {
-      background: #f0f0f0;
-    }
-    .main-content {
-      flex: 1;
+    .content {
+      flex-grow: 1;
+      padding: 20px;
       overflow-y: auto;
+    }
+    .pdf-content {
+      max-width: 800px;
+      margin: 0 auto;
+      border: 1px solid #ccc;
       padding: 20px;
       box-sizing: border-box;
+      background-color: white;
     }
-
-    /* VOCA grid */
-    #keywordsSection ul {
+    .pdf-section {
+      margin-bottom: 20px;
+    }
+    .pdf-section h3 {
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 5px;
+      margin-bottom: 10px;
+    }
+    .theme-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px 16px;
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      page-break-inside: avoid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
     }
-    #keywordsSection ul li {
-      break-inside: avoid;
-    }
-    #keywordsSection {
-      page-break-after: always;
-    }
-
-    /* VOCA item card */
-    #keywordsSection ul li{
-      background:#fafafa;
-      border:1px solid #e1e1e1;
-      border-radius:4px;
-      padding:4px 6px;
-      font-size:0.9rem;
-    }
-    #keywordsSection ul li label{
-      font-weight:600;
-    }
-    .chip{
-      display:inline-block;
-      font-size:0.7rem;
-      font-weight:700;
-      color:#fff;
-      padding:0 4px;
-      border-radius:3px;
-      margin-right:4px;
-    }
-    .chip-n{background:var(--accent2);}
-    .chip-v{background:#42a5f5;}
-    .chip-adj{background:var(--accent);}
-    .chip-adv{background:#ab47bc;}
-    .syn-label{color:var(--accent);font-size:0.75rem;margin-right:2px;}
-    .ant-label{color:var(--warn);font-size:0.75rem;margin-right:2px;}
-
-    /* Summary/Theme page */
-    #summarySection {
-      page-break-before: always;
-    }
-
-    /* summary step bullets */
-    #summarySection p{
-      position:relative;
-      padding-left:22px;
-    }
-    #summarySection p::before{
-      content:'●';
-      position:absolute;
-      left:0;
-      color:var(--border);
-    }
-
-    /* Theme card grid */
-    .theme-grid{
-      display:grid;
-      grid-template-columns:120px 1fr;
-      gap:8px;
-      background:#f9f9ff;
-      border:1px solid #d0d0ff;
-      border-radius:6px;
-      padding:8px 12px;
-      max-width:500px;
-    }
-    .theme-grid .label{
-      font-weight:700;
-      color:var(--accent3);
-    }
-
-    /* Direct translation styling */
-    .direct-item {
-      margin-bottom: 16px;
-    }
-    .direct-item .eng {
-      font-weight: bold;
-      margin-bottom: 4px;
-    }
-    .direct-item .kor {
-      margin-left: 12px;
-      color: #555;
-    }
-    .direct-item:nth-child(even){
-      background:var(--bg-beige);
-      border-radius:4px;
-      padding:4px;
+    .theme-item {
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 4px;
+      background-color: #f9f9f9;
     }
   </style>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 </head>
-
 <body>
-  <aside class="sidebar">
-    <div class="nav-item" id="navLecture">강의용 교안 제작</div>
-    <div class="nav-item" id="navTest">단어 테스트</div>
-    <div class="nav-item" id="navMainTest">본문 테스트지 제작</div>
-    <div class="nav-item" id="navProblemNoChange">문제 제작 (변형 없음)</div>
-    <div class="nav-item" id="navProblemVariant">문제 제작 (지문 변형)</div>
-    <div class="nav-item" id="navWorkbook">워크북 제작</div>
-    <div class="nav-item" id="navCompare">원문 비교</div>
-  </aside>
-
-  <main class="main-content">
-    <div class="container">
-      <header class="lesson-header">
-        <div class="left">
-          <span class="subject">공통영어1</span>
-          <span class="textbook">YBM(김은형)</span>
-        </div>
-        <div class="center">
-          Lesson&nbsp;1<br><small>Believe&nbsp;That&nbsp;You&nbsp;Can&nbsp;Do&nbsp;Better</small>
-        </div>
-      </header>
-
-      <section class="pre-reading">
-        <h2>Pre-Reading 본문 내용 확인</h2>
-        <p>본문은 Matthew Syed의 실제 이야기를 바탕으로 성장 사고방식(growth mindset)의 중요성을 강조한 내용입니다.</p>
-        <blockquote class="tip">
-          TIP: Matthew Syed는 평범한 소년에서 영국 국가대표 탁구 선수로 성장했으며, 그 과정에서 겪은 도전과 극복의 경험이 그의 성공을 이끈 핵심 요소였습니다.
-        </blockquote>
-      </section>
-
-      <div class="section">
-        <h2>지문 입력</h2>
-        <input id="inputTitle" placeholder="제목(예: Lesson 1 Believe That You Can Do Better)" />
-        <input id="inputSubtitle" placeholder="부제목 (예: Believe That You Can Do Better)" />
-        <input id="inputRange" placeholder="범위 (예: p.10-12)" />
-        <textarea id="inputText" placeholder="여기에 지문을 붙여넣어 주세요..."></textarea>
-        <button type="button" id="generateBtn">제작하기</button>
-        <button type="button" id="downloadPdf" style="display:none">PDF로 다운로드</button>
+  <div class="sidebar">
+    <h2>Lecture Input</h2>
+    <input type="text" id="title" placeholder="Title" />
+    <input type="text" id="subtitle" placeholder="Subtitle" />
+    <input type="text" id="range" placeholder="Range (e.g. 1-10)" />
+    <textarea id="voca" rows="3" placeholder="VOCA"></textarea>
+    <textarea id="summary" rows="3" placeholder="Summary"></textarea>
+    <textarea id="themes" rows="6" placeholder="Themes (one per line)"></textarea>
+    <textarea id="direct" rows="3" placeholder="Direct Section"></textarea>
+    <button id="generateBtn">Generate PDF Content</button>
+    <button id="downloadBtn" disabled>Download PDF</button>
+  </div>
+  <div class="content">
+    <div class="pdf-content" id="pdfContent">
+      <div class="pdf-section" id="pdfTitleSection">
+        <h1 id="pdfTitle"></h1>
+        <h2 id="pdfSubtitle"></h2>
       </div>
-
-      <div id="pdfContent" style="display:none">
-        <!-- Title -->
-        <h1 id="docTitle" style="text-align:center; margin-bottom:4px; font-size:24pt; font-weight:700;"></h1>
-        <h3 id="docSubtitle" style="text-align:center; margin:0 0 8px; font-size:14pt; font-weight:600;"></h3>
-        <p id="docRange" style="text-align:center; margin:0 0 16px; font-size:10pt;"></p>
-
-        <!-- VOCA -->
-        <div id="keywordsSection" class="section keywords">
-          <h2>VOCA</h2>
-          <ul id="keywords"></ul>
-        </div>
-
-        <!-- Summary & Theme -->
-        <div id="summarySection" class="section" style="display:none">
-          <h2>4단 요약</h2>
-          <div id="summary"></div>
-        </div>
-        <div id="themeSection" class="section" style="display:none">
-          <h2>핵심 주제</h2>
-          <div class="theme-grid">
-            <span class="label">Theme‑KOR</span><span id="themeK"></span>
-            <span class="label">Theme‑ENG</span><span id="themeE"></span>
-          </div>
-        </div>
-
-        <!-- Direct -->
-        <div class="page-break"></div>
-        <div id="directSection" class="section" style="display:none">
-          <h2>직독직해</h2>
-          <div id="direct"></div>
-        </div>
+      <div class="pdf-section" id="pdfRangeSection">
+        <h3>Range</h3>
+        <p id="pdfRange"></p>
+      </div>
+      <div class="pdf-section" id="pdfVocaSection">
+        <h3>VOCA</h3>
+        <p id="pdfVoca"></p>
+      </div>
+      <div class="pdf-section" id="pdfSummarySection">
+        <h3>Summary</h3>
+        <p id="pdfSummary"></p>
+      </div>
+      <div class="pdf-section" id="pdfThemeSection">
+        <h3>Themes</h3>
+        <div class="theme-grid" id="pdfThemeGrid"></div>
+      </div>
+      <div class="pdf-section" id="pdfDirectSection">
+        <h3>Direct Section</h3>
+        <p id="pdfDirect"></p>
       </div>
     </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const generateBtn = document.getElementById('generateBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
 
-    <script>
-      const generateBtn = document.getElementById('generateBtn');
-      const downloadBtn = document.getElementById('downloadPdf');
-      const inputText   = document.getElementById('inputText');
-      const inputTitle  = document.getElementById('inputTitle');
-      const inputSubtitle = document.getElementById('inputSubtitle');
-      const inputRange    = document.getElementById('inputRange');
-      const keywordsEl  = document.getElementById('keywords');
-      const summaryEl   = document.getElementById('summary');
-      const themeKEl    = document.getElementById('themeK');
-      const themeEEl    = document.getElementById('themeE');
-      const directEl    = document.getElementById('direct');
-      const keywordsSec = document.getElementById('keywordsSection');
-      const summarySec  = document.getElementById('summarySection');
-      const themeSec    = document.getElementById('themeSection');
-      const directSec   = document.getElementById('directSection');
-      const docTitleEl  = document.getElementById('docTitle');
-      const docSubtitleEl = document.getElementById('docSubtitle');
-      const docRangeEl    = document.getElementById('docRange');
-      let lectureData   = null;
+    generateBtn.addEventListener('click', () => {
+      const title = document.getElementById('title').value.trim();
+      const subtitle = document.getElementById('subtitle').value.trim();
+      const range = document.getElementById('range').value.trim();
+      const voca = document.getElementById('voca').value.trim();
+      const summary = document.getElementById('summary').value.trim();
+      const themesRaw = document.getElementById('themes').value.trim();
+      const direct = document.getElementById('direct').value.trim();
 
-      generateBtn.addEventListener('click', async () => {
-        const text = inputText.value.trim();
-        const title = inputTitle.value.trim();
-        if (!title) return alert('제목을 입력해 주세요.');
-        if (!text) return alert('지문을 입력해 주세요.');
+      document.getElementById('pdfTitle').textContent = title || 'No Title';
+      document.getElementById('pdfSubtitle').textContent = subtitle || '';
+      document.getElementById('pdfRange').textContent = range || '';
+      document.getElementById('pdfVoca').textContent = voca || '';
+      document.getElementById('pdfSummary').textContent = summary || '';
 
-        generateBtn.disabled = true;
-        generateBtn.textContent = '생성 중...';
+      const themeGrid = document.getElementById('pdfThemeGrid');
+      themeGrid.innerHTML = '';
+      if (themesRaw) {
+        const themes = themesRaw.split('\n').filter(t => t.trim() !== '');
+        themes.forEach(theme => {
+          const div = document.createElement('div');
+          div.className = 'theme-item';
+          div.textContent = theme;
+          themeGrid.appendChild(div);
+        });
+      }
 
-        try {
-          const res = await fetch('/api/generate-lesson', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text })
-          });
-          if (!res.ok) throw new Error(await res.text());
-          const data = await res.json();
-          lectureData = data;
+      document.getElementById('pdfDirect').textContent = direct || '';
 
-          // Title
-          docTitleEl.innerText = title;
-          docTitleEl.parentElement.style.display = '';
-          docSubtitleEl.innerText = inputSubtitle.value.trim();
-          docRangeEl.innerText    = inputRange.value.trim();
+      downloadBtn.disabled = false;
+    });
 
-          // VOCA
-          keywordsEl.innerHTML = '';
-          const posMap = { noun: '명', adjective: '형', verb: '동', adverb: '부' };
-          data.keywords.forEach(item => {
-            const li = document.createElement('li');
-            const abbr = item.partOfSpeech ? ` (${posMap[item.partOfSpeech]||item.partOfSpeech[0]})` : '';
-            const chipClass = {
-              noun:'chip-n',
-              verb:'chip-v',
-              adjective:'chip-adj',
-              adverb:'chip-adv'
-            }[item.partOfSpeech] || 'chip-n';
-            li.innerHTML = `
-              <label><input type="checkbox"> <span class="chip ${chipClass}">${abbr.replace(/[^가-힣A-Za-z]/g,'')}</span>${item.word}</label>
-              <div style="font-size:0.8em; margin-left:1.4em;">
-                <span class="syn-label">[동의어]</span> ${item.synonyms.join(', ')}<br>
-                <span class="ant-label">[반의어]</span> ${item.antonyms.join(', ')}
-              </div>`;
-            keywordsEl.appendChild(li);
-          });
-          keywordsSec.style.display = '';
+    downloadBtn.addEventListener('click', () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
 
-          // Summary
-          summaryEl.innerHTML = data.summary.map((s,i) => `<p>${i+1}. ${s}</p>`).join('');
-          summarySec.style.display = '';
+      const margin = 10;
+      let y = margin;
 
-          // Theme
-          themeKEl.innerText = data.themeK;
-          themeEEl.innerText = data.themeE;
-          themeSec.style.display = '';
+      const title = document.getElementById('pdfTitle').textContent;
+      const subtitle = document.getElementById('pdfSubtitle').textContent;
+      const range = document.getElementById('pdfRange').textContent;
+      const voca = document.getElementById('pdfVoca').textContent;
+      const summary = document.getElementById('pdfSummary').textContent;
+      const themes = Array.from(document.querySelectorAll('#pdfThemeGrid .theme-item')).map(el => el.textContent);
+      const direct = document.getElementById('pdfDirect').textContent;
 
-          // Direct
-          directEl.innerHTML = data.direct.map((o,i) => `
-            <div class="direct-item">
-              <p class="eng">${i+1}. ${o.english}</p>
-              <p class="kor">${o.korean}</p>
-            </div>
-          `).join('');
-          directSec.style.display = '';
+      doc.setFontSize(22);
+      doc.text(title, margin, y);
+      y += 12;
 
-          downloadBtn.style.display = '';
-        } catch (e) {
-          alert('오류: ' + e.message);
-          console.error(e);
-        } finally {
-          generateBtn.disabled = false;
-          generateBtn.textContent = '제작하기';
-        }
-      });
+      if (subtitle) {
+        doc.setFontSize(16);
+        doc.text(subtitle, margin, y);
+        y += 10;
+      }
 
-      downloadBtn.addEventListener('click', () => {
-        if (!lectureData) return;
-        document.getElementById('pdfContent').style.display = '';
-        html2pdf().set({
-          margin: 10,
-          filename: 'lecture_notes.pdf',
-          html2canvas: { scale: 2 },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        }).from(document.getElementById('pdfContent')).save();
-      });
+      if (range) {
+        y += 5;
+        doc.setFontSize(14);
+        doc.text("Range:", margin, y);
+        y += 8;
+        doc.setFontSize(12);
+        doc.text(range, margin, y);
+        y += 12;
+      }
 
-      // Sidebar navigation
-      ['Lecture','Test','MainTest','ProblemNoChange','ProblemVariant','Workbook','Compare']
-        .forEach(key => document.getElementById('nav'+key)
-          .addEventListener('click', () => {
-            location.href = '/' + {
-              Lecture: 'lecture.html',
-              Test: 'test.html',
-              MainTest: 'main-test.html',
-              ProblemNoChange: 'problem.html',
-              ProblemVariant: 'problem-variant.html',
-              Workbook: 'workbook.html',
-              Compare: 'compare.html'
-            }[key];
-          })
-        );
-    </script>
-  </main>
+      if (voca) {
+        y += 5;
+        doc.setFontSize(14);
+        doc.text("VOCA:", margin, y);
+        y += 8;
+        doc.setFontSize(12);
+        doc.text(doc.splitTextToSize(voca, 180), margin, y);
+        y += doc.getTextDimensions(doc.splitTextToSize(voca, 180)).h + 10;
+      }
+
+      if (summary) {
+        y += 5;
+        doc.setFontSize(14);
+        doc.text("Summary:", margin, y);
+        y += 8;
+        doc.setFontSize(12);
+        doc.text(doc.splitTextToSize(summary, 180), margin, y);
+        y += doc.getTextDimensions(doc.splitTextToSize(summary, 180)).h + 10;
+      }
+
+      if (themes.length > 0) {
+        y += 5;
+        doc.setFontSize(14);
+        doc.text("Themes:", margin, y);
+        y += 10;
+        doc.setFontSize(12);
+        const colWidth = 60;
+        const rowHeight = 10;
+        let col = 0;
+        let row = 0;
+        themes.forEach((theme, index) => {
+          const x = margin + col * colWidth;
+          const textY = y + row * rowHeight;
+          doc.text(theme, x, textY);
+          col++;
+          if (col >= 3) {
+            col = 0;
+            row++;
+          }
+        });
+        y += (Math.ceil(themes.length / 3) * rowHeight) + 10;
+      }
+
+      if (direct) {
+        y += 5;
+        doc.setFontSize(14);
+        doc.text("Direct Section:", margin, y);
+        y += 8;
+        doc.setFontSize(12);
+        doc.text(doc.splitTextToSize(direct, 180), margin, y);
+      }
+
+      doc.save(`${title || 'lecture'}.pdf`);
+    });
+  </script>
 </body>
 </html>
