@@ -10,11 +10,10 @@ const getWordlist   = require('./routes/get-wordlist');
 const generateLesson = require('./routes/generateLesson');
 
 // OpenAI 클라이언트 설정
-const { Configuration, OpenAIApi } = require('openai');
-const configuration = new Configuration({
+const OpenAI = require('openai');
+const openaiApi = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openaiApi = new OpenAIApi(configuration);
 
 const app = express();
 app.use(cors());
