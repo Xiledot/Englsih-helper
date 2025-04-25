@@ -79,41 +79,38 @@
 <body>
   <div class="sidebar">
     <h2>Lecture Input</h2>
-    <input type="text" id="title" placeholder="Title" />
-    <input type="text" id="subtitle" placeholder="Subtitle" />
-    <input type="text" id="range" placeholder="Range (e.g. 1-10)" />
-    <textarea id="voca" rows="3" placeholder="VOCA"></textarea>
-    <textarea id="summary" rows="3" placeholder="Summary"></textarea>
-    <textarea id="themes" rows="6" placeholder="Themes (one per line)"></textarea>
-    <textarea id="direct" rows="3" placeholder="Direct Section"></textarea>
+    <input type="text" id="inputTitle" placeholder="Title" />
+    <input type="text" id="inputSubtitle" placeholder="Subtitle" />
+    <input type="text" id="inputRange" placeholder="Range (e.g. 1-10)" />
+    <textarea id="inputText" rows="10" placeholder="지문을 입력해 주세요..."></textarea>
     <button id="generateBtn">Generate PDF Content</button>
-    <button id="downloadBtn" disabled>Download PDF</button>
+    <button id="downloadBtn" style="display:none;">Download PDF</button>
   </div>
   <div class="content">
-    <div class="pdf-content" id="pdfContent">
+    <div class="pdf-content" id="pdfContent" style="display:none;">
       <div class="pdf-section" id="pdfTitleSection">
-        <h1 id="pdfTitle"></h1>
-        <h2 id="pdfSubtitle"></h2>
+        <h1 id="docTitle"></h1>
+        <h2 id="docSubtitle"></h2>
       </div>
       <div class="pdf-section" id="pdfRangeSection">
         <h3>Range</h3>
-        <p id="pdfRange"></p>
+        <p id="docRange"></p>
       </div>
-      <div class="pdf-section" id="pdfVocaSection">
+      <div class="pdf-section" id="keywordsSection" style="display:none;">
         <h3>VOCA</h3>
-        <p id="pdfVoca"></p>
+        <ul id="keywords"></ul>
       </div>
-      <div class="pdf-section" id="pdfSummarySection">
+      <div class="pdf-section" id="summarySection" style="display:none;">
         <h3>Summary</h3>
-        <p id="pdfSummary"></p>
+        <div id="summary"></div>
       </div>
-      <div class="pdf-section" id="pdfThemeSection">
+      <div class="pdf-section" id="themeSection" style="display:none;">
         <h3>Themes</h3>
         <div class="theme-grid" id="pdfThemeGrid"></div>
       </div>
-      <div class="pdf-section" id="pdfDirectSection">
+      <div class="pdf-section" id="directSection" style="display:none;">
         <h3>Direct Section</h3>
-        <p id="pdfDirect"></p>
+        <div id="direct"></div>
       </div>
     </div>
   </div>
@@ -122,126 +119,73 @@
     const generateBtn = document.getElementById('generateBtn');
     const downloadBtn = document.getElementById('downloadBtn');
 
-    generateBtn.addEventListener('click', () => {
-      const title = document.getElementById('title').value.trim();
-      const subtitle = document.getElementById('subtitle').value.trim();
-      const range = document.getElementById('range').value.trim();
-      const voca = document.getElementById('voca').value.trim();
-      const summary = document.getElementById('summary').value.trim();
-      const themesRaw = document.getElementById('themes').value.trim();
-      const direct = document.getElementById('direct').value.trim();
+    generateBtn.addEventListener('click', async () => {
+      const text = document.getElementById('inputText').value.trim();
+      const title = document.getElementById('inputTitle').value.trim();
+      const subtitle = document.getElementById('inputSubtitle').value.trim();
+      const range = document.getElementById('inputRange').value.trim();
+      if (!title) return alert('제목을 입력해 주세요.');
+      if (!text) return alert('지문을 입력해 주세요.');
 
-      document.getElementById('pdfTitle').textContent = title || 'No Title';
-      document.getElementById('pdfSubtitle').textContent = subtitle || '';
-      document.getElementById('pdfRange').textContent = range || '';
-      document.getElementById('pdfVoca').textContent = voca || '';
-      document.getElementById('pdfSummary').textContent = summary || '';
+      generateBtn.disabled = true;
+      generateBtn.textContent = '생성 중...';
 
-      const themeGrid = document.getElementById('pdfThemeGrid');
-      themeGrid.innerHTML = '';
-      if (themesRaw) {
-        const themes = themesRaw.split('\n').filter(t => t.trim() !== '');
-        themes.forEach(theme => {
+      try {
+        const res = await fetch('/api/generate-lesson', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+
+        // Populate PDF content:
+        document.getElementById('docTitle').innerText = title;
+        document.getElementById('docSubtitle').innerText = subtitle;
+        document.getElementById('docRange').innerText = range;
+        // VOCA
+        const keywordsEl = document.getElementById('keywords');
+        keywordsEl.innerHTML = '';
+        data.keywords.forEach(item => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <label><input type="checkbox"> ${item.word}</label>
+            <div>[동의어] ${item.synonyms.join(', ')}<br>[반의어] ${item.antonyms.join(', ')}</div>`;
+          keywordsEl.appendChild(li);
+        });
+        // Summary
+        document.getElementById('summary').innerHTML = data.summary.map((s,i) => `<p>${i+1}. ${s}</p>`).join('');
+        // Themes
+        const themeGrid = document.getElementById('pdfThemeGrid');
+        themeGrid.innerHTML = '';
+        themeGrid.removeAttribute('style');
+        data.themes.forEach(t => {
           const div = document.createElement('div');
           div.className = 'theme-item';
-          div.textContent = theme;
+          div.textContent = t;
           themeGrid.appendChild(div);
         });
+        // Direct
+        document.getElementById('direct').innerHTML = data.direct.map((o,i) => `
+          <div class="direct-item">
+            <p class="eng">${i+1}. ${o.english}</p>
+            <p class="kor">${o.korean}</p>
+          </div>`).join('');
+
+        // Show PDF sections
+        document.getElementById('pdfContent').style.display = '';
+        document.getElementById('keywordsSection').style.display = '';
+        document.getElementById('summarySection').style.display = '';
+        document.getElementById('themeSection').style.display = '';
+        document.getElementById('directSection').style.display = '';
+        downloadBtn.style.display = '';
+
+      } catch (e) {
+        alert('오류: ' + e.message);
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = '제작하기';
       }
-
-      document.getElementById('pdfDirect').textContent = direct || '';
-
-      downloadBtn.disabled = false;
-    });
-
-    downloadBtn.addEventListener('click', () => {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      const margin = 10;
-      let y = margin;
-
-      const title = document.getElementById('pdfTitle').textContent;
-      const subtitle = document.getElementById('pdfSubtitle').textContent;
-      const range = document.getElementById('pdfRange').textContent;
-      const voca = document.getElementById('pdfVoca').textContent;
-      const summary = document.getElementById('pdfSummary').textContent;
-      const themes = Array.from(document.querySelectorAll('#pdfThemeGrid .theme-item')).map(el => el.textContent);
-      const direct = document.getElementById('pdfDirect').textContent;
-
-      doc.setFontSize(22);
-      doc.text(title, margin, y);
-      y += 12;
-
-      if (subtitle) {
-        doc.setFontSize(16);
-        doc.text(subtitle, margin, y);
-        y += 10;
-      }
-
-      if (range) {
-        y += 5;
-        doc.setFontSize(14);
-        doc.text("Range:", margin, y);
-        y += 8;
-        doc.setFontSize(12);
-        doc.text(range, margin, y);
-        y += 12;
-      }
-
-      if (voca) {
-        y += 5;
-        doc.setFontSize(14);
-        doc.text("VOCA:", margin, y);
-        y += 8;
-        doc.setFontSize(12);
-        doc.text(doc.splitTextToSize(voca, 180), margin, y);
-        y += doc.getTextDimensions(doc.splitTextToSize(voca, 180)).h + 10;
-      }
-
-      if (summary) {
-        y += 5;
-        doc.setFontSize(14);
-        doc.text("Summary:", margin, y);
-        y += 8;
-        doc.setFontSize(12);
-        doc.text(doc.splitTextToSize(summary, 180), margin, y);
-        y += doc.getTextDimensions(doc.splitTextToSize(summary, 180)).h + 10;
-      }
-
-      if (themes.length > 0) {
-        y += 5;
-        doc.setFontSize(14);
-        doc.text("Themes:", margin, y);
-        y += 10;
-        doc.setFontSize(12);
-        const colWidth = 60;
-        const rowHeight = 10;
-        let col = 0;
-        let row = 0;
-        themes.forEach((theme, index) => {
-          const x = margin + col * colWidth;
-          const textY = y + row * rowHeight;
-          doc.text(theme, x, textY);
-          col++;
-          if (col >= 3) {
-            col = 0;
-            row++;
-          }
-        });
-        y += (Math.ceil(themes.length / 3) * rowHeight) + 10;
-      }
-
-      if (direct) {
-        y += 5;
-        doc.setFontSize(14);
-        doc.text("Direct Section:", margin, y);
-        y += 8;
-        doc.setFontSize(12);
-        doc.text(doc.splitTextToSize(direct, 180), margin, y);
-      }
-
-      doc.save(`${title || 'lecture'}.pdf`);
     });
   </script>
 </body>
