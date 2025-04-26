@@ -5,101 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>본문 테스트지 제작</title>
   <style>
-    body {
-      display: flex;
-      margin: 0;
-      height: 100vh;
-      font-family: Arial, sans-serif;
-      background: #f4f7fa;
-    }
-    .sidebar {
-      width: 200px;
-      background: #ffffff;
-      border-right: 1px solid #ddd;
-      display: flex;
-      flex-direction: column;
-      padding-top: 40px;
-      box-sizing: border-box;
-    }
-    .sidebar .nav-item {
-      padding: 12px 20px;
-      font-size: 1rem;
-      color: #333;
-      cursor: pointer;
-    }
-    .sidebar .nav-item:hover {
-      background: #f0f0f0;
-    }
-    .main-content {
-      flex: 1;
-      padding: 20px 40px;
-      box-sizing: border-box;
-      overflow-y: auto;
-    }
-    textarea {
-      width: 100%;
-      height: 200px;
-      padding: 8px;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      resize: vertical;
-      box-sizing: border-box;
-    }
-    button {
-      padding: 12px 24px;
-      margin-top: 12px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 4px;
-      background: #3498db;
-      color: #fff;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #2980b9;
-    }
-    .question-item {
-      margin-bottom: 16px;
-    }
+    body { display: flex; margin: 0; height: 100vh; font-family: Arial, sans-serif; background: #f4f7fa; }
+    .sidebar { width: 200px; background: #2D3B6A; color: #fff; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
+    .sidebar textarea, .sidebar button { margin-bottom: 12px; }
+    .sidebar input, .sidebar textarea { width: 100%; font-size: 1rem; padding: 8px; border-radius: 4px; border: none; }
+    .sidebar button { padding: 10px; font-size: 1rem; background: #E8652D; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    .main-content { flex: 1; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+    .question-item { margin-bottom: 24px; }
+    .question-item p { font-size: 1rem; line-height: 1.4; }
+    .question-item br { margin-bottom: 4px; }
+    #downloadTest { display: none; background: #29a329; }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 </head>
 <body>
   <aside class="sidebar">
-    <div class="nav-item" id="navLecture">강의용 교안 제작</div>
-    <div class="nav-item" id="navTest">단어 테스트</div>
-    <div class="nav-item" id="navMainTest">본문 테스트지 제작</div>
-    <div class="nav-item" id="navProblemNoChange">문제 제작 (변형 없음)</div>
-    <div class="nav-item" id="navProblemVariant">문제 제작 (지문 변형)</div>
-    <div class="nav-item" id="navWorkbook">워크북 제작</div>
-    <div class="nav-item" id="navCompare">원문 비교</div>
+    <h2 style="color:#fff; margin-bottom:16px;">지문 입력</h2>
+    <textarea id="passage" rows="10" placeholder="지문을 붙여넣으세요"></textarea>
+    <button id="genTest">테스트지 생성</button>
+    <button id="downloadTest">PDF 다운로드</button>
   </aside>
   <main class="main-content">
-    <h2>본문 테스트지 제작</h2>
-    <textarea id="sourceText" placeholder="여기에 지문을 붙여넣으세요..."></textarea>
-    <button id="generateMainTest">테스트지 생성</button>
+    <h2>테스트지 미리보기</h2>
     <div id="questions"></div>
   </main>
   <script>
-    // Navigation
-    ['Lecture','Test','MainTest','ProblemNoChange','ProblemVariant','Workbook','Compare']
-      .forEach(key => document.getElementById('nav' + key)
-        .addEventListener('click', () => {
-          const routes = {
-            Lecture: '/lecture.html',
-            Test: '/test.html',
-            MainTest: '/main-test.html',
-            ProblemNoChange: '/problem.html',
-            ProblemVariant: '/problem-variant.html',
-            Workbook: '/workbook.html',
-            Compare: '/compare.html'
-          };
-          location.href = routes[key];
-        })
-      );
-
-    document.getElementById('generateMainTest').addEventListener('click', async () => {
-      const text = document.getElementById('sourceText').value.trim();
+    document.getElementById('genTest').addEventListener('click', async () => {
+      const text = document.getElementById('passage').value.trim();
       if (!text) return alert('지문을 입력하세요.');
       try {
         const res = await fetch('/api/sentence-test', {
@@ -109,20 +41,34 @@
         });
         if (!res.ok) throw new Error(await res.text());
         const { items } = await res.json();
+
         const container = document.getElementById('questions');
         container.innerHTML = '';
         items.forEach(item => {
           const div = document.createElement('div');
           div.className = 'question-item';
-          div.innerHTML = `
-            <p>${item.id}. ${item.question}</p>
-            ${item.note ? `<small>(${item.note})</small>` : ''}
-          `;
+          // replace [빈칸] with underline span
+          const qHtml = item.question
+            .replace(/\[빈칸\]/g, '<span style="border-bottom:1px solid #000; display:inline-block; width:80px;"></span>')
+            .replace(/\[(.*?)\]/g, '<span style="font-weight:600;">[$1]</span>');
+          div.innerHTML = `<p>${item.id}. ${qHtml}</p>${item.note ? `<small>(${item.note})</small>` : ''}`;
           container.appendChild(div);
         });
-      } catch (e) {
-        alert('오류: ' + e.message);
+
+        document.getElementById('downloadTest').style.display = '';
+      } catch (err) {
+        alert('오류: ' + err.message);
       }
+    });
+
+    document.getElementById('downloadTest').addEventListener('click', () => {
+      const element = document.getElementById('questions');
+      html2pdf().set({
+        margin: 10,
+        filename: 'sentence_test.pdf',
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4' }
+      }).from(element).save();
     });
   </script>
 </body>
