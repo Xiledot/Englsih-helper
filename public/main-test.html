@@ -3,93 +3,352 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>본문 테스트지 제작</title>
+  <title>본문 분석지 제작 (EBS 스타일)</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <style>
-    body { display: flex; margin: 0; height: 100vh; font-family: Arial, sans-serif; background: #f4f7fa; }
-    .sidebar { width: 200px; background: #fff; border-right: 1px solid #ddd; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; }
-    .sidebar .nav-item { padding: 8px; margin-bottom: 12px; cursor: pointer; border-radius: 4px; }
-    .sidebar .nav-item:hover { background: #f0f0f0; }
-    .sidebar textarea { flex: 1; padding: 8px; font-size: 0.9rem; border: 1px solid #ccc; border-radius: 4px; resize: vertical; margin-bottom: 12px; }
-    .sidebar button { padding: 10px; font-size: 0.95rem; border: none; border-radius: 4px; background: #3498db; color: #fff; cursor: pointer; margin-bottom: 8px; }
+    /* 기본 스타일 및 레이아웃 */
+    body { display: flex; margin: 0; height: 100vh; font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; background: #f4f7fa; font-size: 14px; }
+    .sidebar { width: 220px; background: #fff; border-right: 1px solid #ddd; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; }
+    .sidebar .nav-item { padding: 8px 12px; margin-bottom: 10px; cursor: pointer; border-radius: 4px; font-size: 0.9rem;}
+    .sidebar .nav-item:hover, .sidebar .nav-item.active { background: #e9f5fe; color: #3498db; font-weight: bold; }
+    .sidebar textarea { flex-grow: 1; min-height: 150px; padding: 10px; font-size: 0.9rem; border: 1px solid #ccc; border-radius: 4px; resize: vertical; margin-bottom: 12px; }
+    .sidebar button { display: block; width: 100%; padding: 10px; font-size: 0.95rem; border: none; border-radius: 4px; background: #3498db; color: #fff; cursor: pointer; margin-bottom: 8px; transition: background-color 0.2s ease; }
     .sidebar button:hover { background: #2980b9; }
-    .sidebar #downloadTest { background: #29a329; }
-    .sidebar #downloadTest:hover { background: #219022; }
-    .main-content { flex: 1; padding: 20px 40px; box-sizing: border-box; overflow-y: auto; }
-    .main-content h2 { margin-bottom: 16px; font-size: 1.2rem; color: #333; }
-    .question-item { margin-bottom: 24px; font-size: 1rem; line-height: 1.4; }
-    .question-item p { margin-bottom: 4px; }
-    .question-item strong { font-weight: 600; }
+    .sidebar #downloadPdfBtn { background: #2ecc71; }
+    .sidebar #downloadPdfBtn:hover { background: #27ae60; }
+    .sidebar #downloadPdfBtn:disabled { background: #bdc3c7; cursor: not-allowed; }
+
+    /* 메인 콘텐츠 영역 */
+    .main-content { flex: 1; padding: 20px 30px; box-sizing: border-box; overflow-y: auto; background-color: #fff; }
+    .main-content h2 { margin-bottom: 16px; font-size: 1.3rem; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;}
+
+    /* 분석지 상단 컨트롤 */
+    .controls { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 15px; justify-content: space-between; align-items: center; }
+    .controls label { cursor: pointer; user-select: none; display: inline-flex; align-items: center; gap: 5px;}
+    .controls input[type="text"] { padding: 5px 8px; border: 1px solid #ccc; border-radius: 3px; font-size: 0.9em;}
+
+    /* 전체 분석지 컨테이너 */
+    .analysis-sheet { border: 1px solid #ccc; padding: 25px; margin-top: 10px; }
+
+    /* 시트 헤더 */
+    .sheet-header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #000; padding-bottom: 15px; }
+    .sheet-header h1 { font-size: 1.5rem; margin-bottom: 8px; font-weight: 600;}
+    .sheet-header .meta { font-size: 0.95rem; color: #555; }
+
+    /* 본문 섹션 (지문 + 해석) */
+    .passage-section { display: flex; gap: 25px; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+    .passage-col { flex: 1; line-height: 1.7; }
+    .passage-col h3 { font-size: 1.1rem; margin-bottom: 12px; border-bottom: 1px dashed #ccc; padding-bottom: 6px; color: #2c3e50; }
+    .english-passage p span.highlight { font-weight: bold; color: #e74c3c; } /* 지문 내 강조(예: 번호) */
+    .english-passage p span.choice { color: #3498db; font-weight: bold; } /* 어휘 선택지 부분 */
+    .english-passage p .blank-underline { border-bottom: 1px solid #000; display: inline-block; min-width: 80px; text-align: center; vertical-align: baseline; } /* 빈칸 스타일 */
+
+
+    /* 문제 섹션 */
+    .question-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 25px; }
+    .question-box { border: 1px solid #ddd; padding: 18px; border-radius: 5px; background-color: #fdfdfd; }
+    .question-box h4 { font-size: 1.05rem; margin-bottom: 12px; color: #3498db; font-weight: 600; }
+    .question-box p { margin-bottom: 8px; line-height: 1.6; }
+    .question-box ul { list-style: none; padding-left: 0; }
+    .question-box li { margin-bottom: 5px; }
+    .question-box small { color: #7f8c8d; font-size: 0.85em; } /* API에서 받은 note 스타일 */
+
+    /* 내용정리/주제 박스 */
+    .summary-box ul, .topic-box ul { padding-left: 18px; list-style: disc; }
+    .summary-box li, .topic-box li { margin-bottom: 8px; }
+
+    /* 정답 섹션 */
+    .answer-section { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
+    .answer-section h3 { font-size: 1.2rem; margin-bottom: 15px; color: #2c3e50; }
+    .answer-section div { font-size: 0.95rem; line-height: 1.8; }
+    .answer-section strong { color: #e74c3c; } /* 정답 강조 */
+
+    /* 로딩/오류 메시지 */
+    .loading-message, .error-message { text-align: center; padding: 40px; font-size: 1.1em; color: #7f8c8d; }
+    .error-message { color: #e74c3c; font-weight: bold; }
+
+    /* 강사용/학생용 제어 */
+    .analysis-sheet:not(.teacher-mode) .teacher-only { display: none; }
+    .analysis-sheet:not(.teacher-mode) .korean-translation { display: none; }
+    .analysis-sheet:not(.teacher-mode) .english-passage { flex-basis: 100%; }
+
+    /* PDF 출력 시 스타일 */
+    @media print {
+      body { display: block; height: auto; background: #fff; font-size: 10pt; }
+      .sidebar, .controls, h2#mainTitle { display: none; } /* h2 제목도 숨김 */
+      .main-content { padding: 0; margin: 0; overflow: visible; background: none; }
+      .analysis-sheet { border: none; padding: 0; margin: 0; box-shadow: none; page-break-inside: avoid; }
+      .passage-section, .question-section, .answer-section { margin-bottom: 15px; padding-bottom: 10px; }
+      .passage-col { line-height: 1.5; }
+      .question-box { page-break-inside: avoid; margin-bottom: 10px; border: 1px solid #eee; }
+      h1, h3, h4 { page-break-after: avoid; }
+      p, ul, li { page-break-inside: avoid; }
+    }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 </head>
 <body>
   <aside class="sidebar">
-    <div class="nav-item" id="navLecture">강의용 교안 제작</div>
-    <div class="nav-item" id="navTest">단어 테스트</div>
-    <div class="nav-item" id="navMainTest">본문 테스트지 제작</div>
-    <div class="nav-item" id="navProblemNoChange">문제 제작 (변형 없음)</div>
-    <div class="nav-item" id="navProblemVariant">문제 제작 (지문 변형)</div>
-    <div class="nav-item" id="navWorkbook">워크북 제작</div>
-    <div class="nav-item" id="navCompare">원문 비교</div>
+    <div class="nav-item" onclick="location.href='lecture.html'">강의용 교안 제작</div>
+    <div class="nav-item" onclick="location.href='test.html'">단어 테스트</div>
+    <div class="nav-item active" id="navMainTest">본문 테스트지 제작</div>
+    <div class="nav-item" onclick="location.href='problem.html'">문제 제작 (변형 없음)</div>
+    <div class="nav-item" onclick="location.href='problem-variant.html'">문제 제작 (지문 변형)</div>
+    <div class="nav-item" onclick="location.href='workbook.html'">워크북 제작</div>
+    <div class="nav-item" onclick="location.href='compare.html'">원문 비교</div>
     <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
-    <textarea id="passage" placeholder="지문을 붙여넣으세요..."></textarea>
-    <button id="genTest">테스트지 생성</button>
-    <button id="downloadTest" style="display:none">PDF 다운로드</button>
-  </aside>
-  <main class="main-content">
-    <h2>테스트지 미리보기</h2>
-    <div id="questions"></div>
-  </main>
-  <script>
-    // 네비게이션
-    ['Lecture','Test','MainTest','ProblemNoChange','ProblemVariant','Workbook','Compare'].forEach(key => {
-      document.getElementById('nav'+key).addEventListener('click', () => {
-        const routes = {
-          Lecture: 'lecture.html',
-          Test: 'test.html',
-          MainTest: 'main-test.html',
-          ProblemNoChange: 'problem.html',
-          ProblemVariant: 'problem-variant.html',
-          Workbook: 'workbook.html',
-          Compare: 'compare.html'
-        };
-        location.href = routes[key];
-      });
-    });
 
-    document.getElementById('genTest').addEventListener('click', async () => {
-      const text = document.getElementById('passage').value.trim();
-      if (!text) return alert('지문을 입력해 주세요.');
+    <textarea id="passageInput" placeholder="여기에 분석할 지문을 붙여넣으세요..."></textarea>
+    <button id="genTestBtn">분석지 생성</button>
+    <button id="downloadPdfBtn" disabled>PDF 다운로드</button>
+  </aside>
+
+  <main class="main-content">
+    <h2 id="mainTitle">본문 분석지 미리보기</h2>
+
+    <div id="analysisResult">
+      <p style="color: #7f8c8d; text-align: center; padding: 20px;">왼쪽 텍스트 영역에 지문을 붙여넣고 '분석지 생성' 버튼을 클릭하세요.</p>
+    </div>
+  </main>
+
+  <script>
+    const passageInput = document.getElementById('passageInput');
+    const genTestBtn = document.getElementById('genTestBtn');
+    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+    const analysisResultDiv = document.getElementById('analysisResult');
+
+    const idealDataStructureExample = {
+      header: {
+        title: "EBS 올림포스 전국연합학력평가 기출",
+        subject: "고1 영어독해 (2025)",
+        source: "2024년 6월 39번",
+        unit: "Unit 17"
+      },
+      passage: {
+        english: "Spending time as children allows animals <span class='choice'>[to learn / learn]</span><span class='highlight'>(1)</span> about their environment. <span class='highlight'>(2)</span> Without childhood, animals must rely more fully on hardware, and therefore be less <span class='choice'>*[flexible / inflexible]</span><span class='highlight'>(3)</span>. ... Childhood gives [[blank]]<span class='highlight'>(7)</span> in a changing world.",
+        korean: "새끼 때 시간을 보내는 것은 동물들이 환경에 대해 배우도록 해 준다. 유년기가 없다면 동물들은 하드웨어(타고난 본능)에 더 전적으로 의존해야 하고, 따라서 덜 유연할 것이다. ... 유년기는 변화하는 세계에서 [[빈칸]]을 제공한다."
+      },
+      questions: {
+        vocabulary: {
+          title: "어휘 (공통)",
+          questionText: "밑줄 친 (1)~(7) 중에서 문맥상 낱말의 쓰임이 적절하지 않은 것은?",
+          choices: ["(1) to learn", "(3) flexible", "(?) inefficient", "(?) adapt", "(?) old"],
+          answer: "(3) flexible (→ inflexible)"
+        },
+        blank: {
+          title: "빈칸 (상)",
+          questionText: "다음 빈칸 (7)에 들어갈 말로 가장 적절한 것은?",
+          choices: ["rigidity", "confusion", "flexibility", "stability"],
+          answer: "flexibility"
+        },
+        sentenceCompletion: []
+      },
+      analysis: {
+        summary: {
+           title: "내용정리",
+           points: [
+              "동물은 유년기를 통해 환경에 대해 배우고 유연성을 얻는다.",
+              "유년기가 없는 동물은 타고난 본능에 의존하여 변화에 덜 유연하다.",
+              "예시: 철새 중 본능에만 의존하는 새는 환경 변화 적응에 어려움을 겪는다.",
+              "반면, 유년기가 길거나 부모와 함께 이동하는 새는 문화 정보 전달을 통해 더 빨리 진화하고 변화하는 세계에 유연하게 대처한다."
+           ]
+        },
+        topic: {
+           title: "주제",
+           text: "변화하는 환경에 대한 적응력을 높이는 유년기의 중요성 (The importance of childhood in increasing adaptability to a changing environment)"
+        }
+      },
+      answerKey: {
+         title: "정답",
+         vocabAnswer: "(3) flexible (→ inflexible)",
+         blankAnswer: "(7) flexibility",
+      }
+    };
+
+    const sampleAnalysisData = JSON.parse(JSON.stringify(idealDataStructureExample));
+
+    function renderAnalysisSheet(data) {
+      analysisResultDiv.innerHTML = `
+        <div class="controls">
+          <div>
+             <label><input type="checkbox" id="teacherModeToggle"> 강사용 보기 (정답/해석 등)</label>
+          </div>
+          <div>
+             <label>제목: <input type="text" id="sheetTitle" value="${data.header.title}"></label>
+             <label>단원: <input type="text" id="sheetUnit" size="10" value="${data.header.unit}"></label>
+             <label>출처: <input type="text" id="sheetSource" size="15" value="${data.header.source}"></label>
+          </div>
+        </div>
+        <div id="analysisSheet" class="analysis-sheet">
+          <header class="sheet-header">
+            <h1 id="renderTitle">${data.header.title}</h1>
+            <div class="meta" id="renderMeta">${data.header.subject} | ${data.header.source} | ${data.header.unit}</div>
+          </header>
+          <section class="passage-section">
+            <div class="passage-col english-passage">
+              <h3>지문 분석</h3>
+              <p id="englishPassageContent"></p>
+            </div>
+            <div class="passage-col korean-translation teacher-only">
+              <h3>해석</h3>
+              <p id="koreanPassageContent"></p>
+            </div>
+          </section>
+          <section class="question-section">
+            <div class="question-box vocab-question">
+              <h4 id="vocabTitle"></h4>
+              <p id="vocabQuestionText"></p>
+              <ul id="vocabChoices"></ul>
+            </div>
+            <div class="question-box blank-question">
+              <h4 id="blankTitle"></h4>
+              <p id="blankQuestionText"></p>
+              <ul id="blankChoices"></ul>
+            </div>
+            <div class="question-box sentence-completion-question">
+              <h4>문장 완성 (API 결과)</h4>
+              <div id="sentenceCompletionList"></div>
+            </div>
+            <div class="question-box summary-box teacher-only">
+              <h4 id="summaryTitle"></h4>
+              <ul id="summaryPoints"></ul>
+            </div>
+            <div class="question-box topic-box teacher-only">
+              <h4 id="topicTitle"></h4>
+              <p id="topicText"></p>
+            </div>
+          </section>
+          <section class="answer-section teacher-only">
+            <h3 id="answerKeyTitle"></h3>
+            <div id="answerKeyContent"></div>
+          </section>
+        </div>
+      `;
+
+      document.getElementById('englishPassageContent').innerHTML = data.passage.english.replace(/\[\[blank\]\]/g, '<span class="blank-underline">&nbsp;</span>');
+      document.getElementById('koreanPassageContent').textContent = data.passage.korean;
+
+      document.getElementById('vocabTitle').textContent = data.questions.vocabulary.title;
+      document.getElementById('vocabQuestionText').textContent = data.questions.vocabulary.questionText;
+      document.getElementById('vocabChoices').innerHTML = data.questions.vocabulary.choices.map(c => `<li>${c}</li>`).join('');
+
+      document.getElementById('blankTitle').textContent = data.questions.blank.title;
+      document.getElementById('blankQuestionText').textContent = data.questions.blank.questionText;
+      document.getElementById('blankChoices').innerHTML = data.questions.blank.choices.map((c, i) => `<li>(${i+1}) ${c}</li>`).join('');
+
+      const sentenceListDiv = document.getElementById('sentenceCompletionList');
+      if (data.questions.sentenceCompletion && data.questions.sentenceCompletion.length > 0) {
+        sentenceListDiv.innerHTML = data.questions.sentenceCompletion.map(item => {
+             const qHtml = item.question
+               .replace(/\[빈칸\]/g, '<span class="blank-underline">&nbsp;</span>')
+               .replace(/\[(.*?)\]/g, '<strong>[$1]</strong>');
+             return `<p>${item.id}. ${qHtml}${item.note ? ` <small>(${item.note})</small>` : ''}</p>`;
+        }).join('');
+      } else {
+        sentenceListDiv.innerHTML = '<p><small>API에서 문장 완성 질문을 받지 못했습니다.</small></p>';
+      }
+
+      document.getElementById('summaryTitle').textContent = data.analysis.summary.title;
+      document.getElementById('summaryPoints').innerHTML = data.analysis.summary.points.map(p => `<li>${p}</li>`).join('');
+
+      document.getElementById('topicTitle').textContent = data.analysis.topic.title;
+      document.getElementById('topicText').textContent = data.analysis.topic.text;
+
+      document.getElementById('answerKeyTitle').textContent = data.answerKey.title;
+      document.getElementById('answerKeyContent').innerHTML = `
+        <p>어휘: <strong>${data.answerKey.vocabAnswer}</strong></p>
+        <p>빈칸: <strong>${data.answerKey.blankAnswer}</strong></p>
+      `;
+
+      const toggle = document.getElementById('teacherModeToggle');
+      const sheet = document.getElementById('analysisSheet');
+      toggle.addEventListener('change', function() {
+        sheet.classList.toggle('teacher-mode', this.checked);
+      });
+      sheet.classList.remove('teacher-mode');
+
+      document.getElementById('sheetTitle').addEventListener('input', e => { document.getElementById('renderTitle').textContent = e.target.value; updateRenderMeta(); });
+      document.getElementById('sheetUnit').addEventListener('input', updateRenderMeta);
+      document.getElementById('sheetSource').addEventListener('input', updateRenderMeta);
+
+       function updateRenderMeta() {
+          const subject = data.header.subject;
+          const source = document.getElementById('sheetSource').value;
+          const unit = document.getElementById('sheetUnit').value;
+          document.getElementById('renderMeta').textContent = `${subject} | ${source} | ${unit}`;
+       }
+
+      downloadPdfBtn.disabled = false;
+    }
+
+    genTestBtn.addEventListener('click', async () => {
+      const text = passageInput.value.trim();
+      if (!text) {
+        alert('지문을 입력해 주세요.');
+        return;
+      }
+
+      analysisResultDiv.innerHTML = '<p class="loading-message">분석 중입니다... 잠시만 기다려 주세요.</p>';
+      genTestBtn.disabled = true;
+      downloadPdfBtn.disabled = true;
+
       try {
-        const res = await fetch('/api/sentence-test', {
+        const res = await fetch('/api/sentence-test', { // API 엔드포인트
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text })
+          body: JSON.stringify({ text }) // 요청 본문 형식
         });
-        if (!res.ok) throw new Error(await res.text());
-        const { items } = await res.json();
-        const container = document.getElementById('questions');
-        container.innerHTML = '';
-        items.forEach(item => {
-          const div = document.createElement('div');
-          div.className = 'question-item';
-          const qHtml = item.question
-            .replace(/\[빈칸\]/g, '<span style="border-bottom:1px solid #000; display:inline-block; width:80px;"></span>')
-            .replace(/\[(.*?)\]/g, '<strong>[$1]</strong>');
-          div.innerHTML = `<p>${item.id}. ${qHtml}</p>${item.note ? `<small style="color:#555;">(${item.note})</small>` : ''}`;
-          container.appendChild(div);
-        });
-        document.getElementById('downloadTest').style.display = 'block';
-      } catch (e) {
-        alert('오류: ' + e.message);
+
+        if (!res.ok) {
+          const errorBody = await res.text();
+          throw new Error(`API 호출 실패 (${res.status}): ${errorBody}`);
+        }
+
+        const apiResult = await res.json(); // 응답 형식: { items: [...] }
+
+        const finalData = JSON.parse(JSON.stringify(sampleAnalysisData));
+        finalData.questions.sentenceCompletion = apiResult.items || []; // API 결과 반영
+
+        console.warn("백엔드 API(/api/sentence-test)는 현재 문장 완성 질문만 반환합니다. 해석, 요약, 주제, 다른 유형의 문제 등은 샘플 데이터로 표시됩니다. 완전한 기능을 위해서는 백엔드 API가 'idealDataStructureExample'과 같은 모든 필수 정보를 포함하는 JSON 객체를 반환하도록 수정해야 합니다.");
+
+        renderAnalysisSheet(finalData);
+
+      } catch (error) {
+        console.error('분석지 생성 오류:', error);
+        analysisResultDiv.innerHTML = `<p class="error-message">오류 발생: ${error.message}</p>`;
+      } finally {
+        genTestBtn.disabled = false;
       }
     });
 
-    document.getElementById('downloadTest').addEventListener('click', () => {
-      const element = document.getElementById('questions');
-      html2pdf().set({ margin: 10, filename: 'sentence_test.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } })
-        .from(element).save();
+    downloadPdfBtn.addEventListener('click', () => {
+      const sheetElement = document.getElementById('analysisSheet');
+      if (!sheetElement) return;
+
+      const filename = `analysis_sheet_${document.getElementById('sheetUnit').value || 'test'}.pdf`;
+      const options = {
+        margin: 15,
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      const toggle = document.getElementById('teacherModeToggle');
+      const wasChecked = toggle.checked;
+      sheetElement.classList.add('teacher-mode');
+
+      html2pdf().from(sheetElement).set(options).save().then(() => {
+         if (!wasChecked) {
+             sheetElement.classList.remove('teacher-mode');
+         }
+      }).catch(err => {
+         console.error("PDF 생성 오류:", err);
+         if (!wasChecked) {
+             sheetElement.classList.remove('teacher-mode');
+         }
+      });
     });
+
   </script>
 </body>
 </html>
