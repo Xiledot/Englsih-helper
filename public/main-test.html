@@ -66,3 +66,98 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>본문 테스트지 제작</title>
+  <style>
+    body { display: flex; margin: 0; height: 100vh; font-family: Arial, sans-serif; background: #f4f7fa; }
+    .sidebar { width: 200px; background: #fff; border-right: 1px solid #ddd; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; }
+    .sidebar .nav-item { padding: 8px; margin-bottom: 12px; cursor: pointer; border-radius: 4px; }
+    .sidebar .nav-item:hover { background: #f0f0f0; }
+    .sidebar textarea { flex: 1; padding: 8px; font-size: 0.9rem; border: 1px solid #ccc; border-radius: 4px; resize: vertical; margin-bottom: 12px; }
+    .sidebar button { padding: 10px; font-size: 0.95rem; border: none; border-radius: 4px; background: #3498db; color: #fff; cursor: pointer; margin-bottom: 8px; }
+    .sidebar button:hover { background: #2980b9; }
+    .sidebar #downloadTest { background: #29a329; }
+    .sidebar #downloadTest:hover { background: #219022; }
+    .main-content { flex: 1; padding: 20px 40px; box-sizing: border-box; overflow-y: auto; }
+    .main-content h2 { margin-bottom: 16px; font-size: 1.2rem; color: #333; }
+    .question-item { margin-bottom: 24px; font-size: 1rem; line-height: 1.4; }
+    .question-item p { margin-bottom: 4px; }
+    .question-item strong { font-weight: 600; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="nav-item" id="navLecture">강의용 교안 제작</div>
+    <div class="nav-item" id="navTest">단어 테스트</div>
+    <div class="nav-item" id="navMainTest">본문 테스트지 제작</div>
+    <div class="nav-item" id="navProblemNoChange">문제 제작 (변형 없음)</div>
+    <div class="nav-item" id="navProblemVariant">문제 제작 (지문 변형)</div>
+    <div class="nav-item" id="navWorkbook">워크북 제작</div>
+    <div class="nav-item" id="navCompare">원문 비교</div>
+    <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+    <textarea id="passage" placeholder="지문을 붙여넣으세요..."></textarea>
+    <button id="genTest">테스트지 생성</button>
+    <button id="downloadTest" style="display:none">PDF 다운로드</button>
+  </aside>
+  <main class="main-content">
+    <h2>테스트지 미리보기</h2>
+    <div id="questions"></div>
+  </main>
+  <script>
+    // 네비게이션
+    ['Lecture','Test','MainTest','ProblemNoChange','ProblemVariant','Workbook','Compare'].forEach(key => {
+      document.getElementById('nav'+key).addEventListener('click', () => {
+        const routes = {
+          Lecture: 'lecture.html',
+          Test: 'test.html',
+          MainTest: 'main-test.html',
+          ProblemNoChange: 'problem.html',
+          ProblemVariant: 'problem-variant.html',
+          Workbook: 'workbook.html',
+          Compare: 'compare.html'
+        };
+        location.href = routes[key];
+      });
+    });
+
+    document.getElementById('genTest').addEventListener('click', async () => {
+      const text = document.getElementById('passage').value.trim();
+      if (!text) return alert('지문을 입력해 주세요.');
+      try {
+        const res = await fetch('/api/sentence-test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const { items } = await res.json();
+        const container = document.getElementById('questions');
+        container.innerHTML = '';
+        items.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'question-item';
+          const qHtml = item.question
+            .replace(/\[빈칸\]/g, '<span style="border-bottom:1px solid #000; display:inline-block; width:80px;"></span>')
+            .replace(/\[(.*?)\]/g, '<strong>[$1]</strong>');
+          div.innerHTML = `<p>${item.id}. ${qHtml}</p>${item.note ? `<small style="color:#555;">(${item.note})</small>` : ''}`;
+          container.appendChild(div);
+        });
+        document.getElementById('downloadTest').style.display = 'block';
+      } catch (e) {
+        alert('오류: ' + e.message);
+      }
+    });
+
+    document.getElementById('downloadTest').addEventListener('click', () => {
+      const element = document.getElementById('questions');
+      html2pdf().set({ margin: 10, filename: 'sentence_test.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } })
+        .from(element).save();
+    });
+  </script>
+</body>
+</html>
