@@ -3,243 +3,104 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>본문 분석지 제작 (EBS 스타일 - 디자인 개선)</title>
+  <title>본문 분석지 제작 (EBS 스타일 - 기능 추가)</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <style>
-    /* --- EBS 스타일 기반 CSS --- */
+    /* --- 이전 답변의 CSS 스타일 유지 --- */
+    /* 여기에 이전 답변에서 제공된 전체 CSS 코드를 붙여넣으세요 */
+    /* (기본 설정, 사이드바, 메인 콘텐츠, 컨트롤, 분석지, 헤더, 본문 컬럼, 문제 섹션, 정답 섹션 등) */
+    /* 예시 시작 (이전 CSS 코드 전체 필요) */
+    body { display: flex; margin: 0; height: 100vh; font-family: 'Noto Sans KR', 'Malgun Gothic', '맑은 고딕', sans-serif; background: #f4f7fa; font-size: 14px; color: #333; }
+    .sidebar { width: 220px; background: #fff; /* ... */ }
+    .main-content { flex: 1; padding: 25px 35px; /* ... */ }
+    .analysis-sheet { border: 1px solid #adb5bd; padding: 30px; /* ... */ }
+    .passage-section { display: flex; gap: 30px; /* ... */ }
+    .passage-col { flex: 1; line-height: 1.8; /* ... */ }
+    .passage-col h3 { font-size: 1.15rem; /* ... */ }
+    .question-section { display: grid; /* ... */ }
+    .question-box { border: 1px solid #dee2e6; /* ... */ }
+    .question-box h4 { font-size: 1.1rem; /* ... */ }
+    .answer-section { margin-top: 35px; padding: 25px; /* ... */ }
+    .loading-message, .error-message { text-align: center; /* ... */ }
+    /* ... (이전 CSS 전체 내용) ... */
 
-    /* 기본 설정 */
-    body {
-      display: flex;
-      margin: 0;
-      height: 100vh;
-      /* Noto Sans KR 또는 시스템 기본 산세리프 폰트 사용 */
-      font-family: 'Noto Sans KR', 'Malgun Gothic', '맑은 고딕', sans-serif;
-      background: #f4f7fa;
-      font-size: 14px; /* 기본 폰트 크기 */
-      color: #333; /* 기본 텍스트 색상 */
-    }
+    /* --- 추가/수정된 CSS 스타일 --- */
 
-    /* 사이드바 (기존 스타일 유지 또는 약간 조정) */
-    .sidebar {
-      width: 220px;
-      background: #fff;
-      border-right: 1px solid #ddd;
-      padding: 20px;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      font-size: 0.9rem; /* 사이드바 내 폰트 약간 작게 */
-    }
-    .sidebar .nav-item { padding: 8px 12px; margin-bottom: 10px; cursor: pointer; border-radius: 4px; }
-    .sidebar .nav-item:hover, .sidebar .nav-item.active { background: #e9f5fe; color: #007bff; font-weight: 500; }
-    .sidebar textarea { flex-grow: 1; min-height: 150px; padding: 10px; font-size: 0.9rem; border: 1px solid #ccc; border-radius: 4px; resize: vertical; margin-bottom: 12px; font-family: inherit; }
-    .sidebar button { display: block; width: 100%; padding: 10px; font-size: 0.95rem; border: none; border-radius: 4px; background: #007bff; color: #fff; cursor: pointer; margin-bottom: 8px; transition: background-color 0.2s ease; }
-    .sidebar button:hover { background: #0056b3; }
-    .sidebar #downloadPdfBtn { background: #28a745; }
-    .sidebar #downloadPdfBtn:hover { background: #218838; }
-    .sidebar #downloadPdfBtn:disabled { background: #bdc3c7; cursor: not-allowed; }
-
-    /* 메인 콘텐츠 영역 */
-    .main-content {
-      flex: 1;
-      padding: 25px 35px; /* 여백 조정 */
-      box-sizing: border-box;
-      overflow-y: auto;
-      background-color: #fff; /* 메인 영역 배경 흰색 */
-    }
-    .main-content h2#mainTitle { /* 페이지 제목 스타일 */
-      margin-bottom: 20px;
-      font-size: 1.5rem; /* 크기 키움 */
-      color: #343a40;
-      border-bottom: 1px solid #dee2e6;
-      padding-bottom: 15px;
-      font-weight: 600;
-    }
-
-    /* 분석지 상단 컨트롤 */
-    .controls {
-      margin-bottom: 25px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px 25px; /* 간격 조정 */
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem; /* 컨트롤 영역 폰트 작게 */
-    }
-    .controls label { cursor: pointer; user-select: none; display: inline-flex; align-items: center; gap: 6px; color: #495057; }
-    .controls input[type="checkbox"] { margin-right: 3px; }
-    .controls input[type="text"] { padding: 6px 9px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.95em; }
-
-    /* 전체 분석지 컨테이너 */
-    .analysis-sheet {
-      border: 1px solid #adb5bd; /* 테두리 약간 진하게 */
-      padding: 30px; /* 내부 여백 늘림 */
-      margin-top: 15px;
-      background: #fff; /* 배경 흰색 명시 */
-    }
-
-    /* 시트 헤더 */
-    .sheet-header {
-      text-align: center;
-      margin-bottom: 30px;
-      border-bottom: 2px solid #000; /* 하단 선 굵게 */
-      padding-bottom: 20px;
-    }
-    .sheet-header h1 {
-      font-size: 1.8rem; /* 제목 크기 강조 */
-      margin-bottom: 10px;
-      font-weight: 700; /* 더 굵게 */
-      color: #212529;
-    }
-    .sheet-header .meta {
-      font-size: 0.9rem; /* 메타 정보 약간 작게 */
-      color: #6c757d; /* 메타 정보 색상 연하게 */
-    }
-
-    /* 본문 섹션 (지문 + 해석) */
-    .passage-section {
-      display: flex;
-      gap: 30px; /* 컬럼 간격 늘림 */
-      margin-bottom: 30px;
-      border-bottom: 1px solid #e9ecef; /* 구분선 연하게 */
-      padding-bottom: 25px;
-    }
-    .passage-col {
-      flex: 1;
-      line-height: 1.8; /* 줄 간격 늘림 */
-      font-size: 0.95rem; /* 본문 폰트 약간 키움 */
-    }
-    .passage-col h3 { /* 지문, 해석 제목 */
-      font-size: 1.15rem;
-      margin-bottom: 15px;
-      padding-bottom: 8px;
-      color: #0056b3; /* 제목 색상 변경 */
-      font-weight: 600;
-      border-bottom: 2px solid #dee2e6; /* 제목 밑줄 변경 */
-    }
-     /* 지문/해석 내용 단락 스타일 */
-    .passage-col p {
-        margin-bottom: 1em; /* 단락 간 여백 */
-        text-align: justify; /* 양쪽 정렬 (선택 사항) */
-    }
-
-    /* 지문 내 마크업 스타일 */
-    .english-passage span.highlight { /* (번호) 스타일 */
-      font-weight: bold;
-      color: #dc3545; /* 빨간색 계열 */
-      margin-left: 2px; /* 앞 내용과 살짝 띄움 */
-    }
-    .english-passage span.choice { /* [보기1/보기2] 스타일 */
-      color: #007bff; /* 파란색 계열 */
-      font-weight: 500;
-    }
-    .english-passage .blank-underline { /* [[blank]](번호) 스타일 */
-      border-bottom: 1.5px solid #333;
+    /* 원문자 번호 스타일 */
+    .sentence-number {
       display: inline-block;
-      min-width: 60px; /* 최소 너비 */
-      padding: 0 4px; /* 좌우 약간 여백 */
+      background-color: #eee;
+      color: #333;
+      border-radius: 50%;
+      width: 1.5em;
+      height: 1.5em;
+      line-height: 1.5em;
       text-align: center;
-      vertical-align: baseline;
-      font-style: normal; /* 이탤릭 제거 */
-      color: #333; /* 번호 색상 */
-      font-weight: 500;
-      margin: 0 2px;
+      font-size: 0.8em;
+      font-weight: bold;
+      margin-right: 8px;
+      vertical-align: baseline; /* 줄 시작 위치 맞춤 */
     }
 
-    /* 문제 섹션 */
-    .question-section {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* 최소 너비 증가 */
-      gap: 25px; /* 박스 간 간격 */
-      margin-bottom: 30px;
+    /* 강사용: 본문 선택지 정답 볼드 */
+    .analysis-sheet.teacher-mode .english-passage strong {
+        font-weight: 900; /* 더 굵게 */
+        color: #dc3545; /* 정답 색상 */
     }
-    .question-box {
-      border: 1px solid #dee2e6;
-      padding: 20px; /* 내부 여백 늘림 */
-      border-radius: 6px;
-      background-color: #f8f9fa; /* 약간의 배경색 */
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* 은은한 그림자 */
+
+    /* 본문 빈칸 스타일 수정 (강사용 포함) */
+    .english-passage .blank-underline {
+        border-bottom: 1.5px solid #333;
+        display: inline-block;
+        min-width: 50px; /* 최소 너비 */
+        padding: 0 4px;
+        text-align: center;
+        vertical-align: baseline;
+        font-style: normal;
+        color: #6c757d; /* 학생용 빈칸 번호 색상 */
+        font-weight: 500;
+        margin: 0 2px;
+        white-space: nowrap; /* 줄바꿈 방지 */
     }
-    .question-box h4 { /* 문제 유형 제목 */
-      font-size: 1.1rem;
-      margin-bottom: 15px;
-      padding: 8px 12px; /* 제목 영역 패딩 */
-      color: #fff;
-      background-color: #6c757d; /* 제목 배경색 (목표 이미지 참고) */
-      border-radius: 4px 4px 0 0; /* 위쪽만 둥글게 */
-      margin: -20px -20px 15px -20px; /* 패딩만큼 당겨서 박스 상단에 붙임 */
-      font-weight: 500;
+    /* 강사용 빈칸 정답 스타일 */
+    .analysis-sheet.teacher-mode .english-passage .blank-underline.has-answer {
+        border-bottom: none; /* 밑줄 제거 */
+        font-weight: bold;
+        color: #dc3545; /* 정답 색상 */
+        padding: 0;
     }
-    /* 특정 문제 유형 제목 색상 (선택적) */
-    .question-box.vocab-question h4 { background-color: #007bff; }
-    .question-box.blank-question h4 { background-color: #17a2b8; }
-    .question-box.summary-box h4 { background-color: #ffc107; color: #333; }
-    .question-box.topic-box h4 { background-color: #28a745; }
-    .question-box.sentence-completion-question h4 { background-color: #6f42c1; }
 
-    .question-box p { margin-bottom: 10px; line-height: 1.7; }
-    .question-box ul { list-style: none; padding-left: 5px; }
-    .question-box li { margin-bottom: 8px; line-height: 1.6; }
-    .question-box small { color: #6c757d; font-size: 0.9em; }
-
-    /* 내용정리/주제 박스 리스트 스타일 */
-    .summary-box ul, .topic-box ul { padding-left: 20px; list-style: decimal; } /* 번호 매김 */
-    .summary-box li, .topic-box li { margin-bottom: 10px; }
-
-    /* 정답 섹션 */
-    .answer-section {
-      margin-top: 35px;
-      padding: 25px; /* 내부 여백 */
-      border: 1px solid #e9ecef; /* 테두리 */
-      border-radius: 6px;
-      background-color: #fdfdff; /* 약간 다른 배경색 */
+    /* 내용 요약 빈칸 스타일 */
+    .summary-point .blank-underline {
+        border-bottom: 1px solid #000;
+        display: inline-block;
+        width: 80px;
+        height: 1em;
+        vertical-align: baseline;
     }
-    .answer-section h3 { /* 정답 제목 */
-      font-size: 1.25rem;
-      margin-bottom: 18px;
-      color: #dc3545; /* 정답 섹션 강조색 */
-      font-weight: 600;
-      border-bottom: 1px solid #f1d4d7;
-      padding-bottom: 8px;
-    }
-    .answer-section div { font-size: 1rem; line-height: 1.9; }
-    .answer-section p { margin-bottom: 8px; } /* 정답 항목 간 간격 */
-    .answer-section strong { color: #c82333; font-weight: 600; } /* 정답 텍스트 강조 */
 
-    /* 로딩/오류 메시지 */
-    .loading-message, .error-message { text-align: center; padding: 50px; font-size: 1.1em; color: #6c757d; }
-    .error-message { color: #dc3545; font-weight: 500; }
+    /* 내용 요약 리스트는 학생/강사 모두에게 보이도록 */
+    /* .summary-box.teacher-only 제거됨 */
+    .summary-box ul { padding-left: 20px; list-style: decimal; } /* 내용 요약은 번호로 */
+    .summary-box li { margin-bottom: 10px; }
 
-    /* 강사용/학생용 제어 (변경 없음) */
-    .analysis-sheet:not(.teacher-mode) .teacher-only { display: none; }
-    .analysis-sheet:not(.teacher-mode) .korean-translation { display: none; }
-    .analysis-sheet:not(.teacher-mode) .english-passage { flex-basis: 100%; }
 
-    /* PDF 출력 시 스타일 (최대한 유지, 필요시 미세 조정) */
+    /* PDF 출력 스타일 조정 */
     @media print {
-      body { display: block; height: auto; background: #fff; font-size: 10pt; color: #000; font-family: 'Malgun Gothic', sans-serif; }
-      .sidebar, .controls, h2#mainTitle { display: none; }
-      .main-content { padding: 0; margin: 0; overflow: visible; background: none; }
-      .analysis-sheet { border: none; padding: 0; margin: 0; box-shadow: none; page-break-inside: avoid; width: 100%; }
-      .passage-section, .question-section, .answer-section { margin-bottom: 15px; padding-bottom: 10px; }
-      .passage-col { line-height: 1.5; font-size: 9.5pt; }
-      .question-box { page-break-inside: avoid; margin-bottom: 10px; border: 1px solid #eee; background: #fff; box-shadow: none; padding: 15px; }
-      .question-box h4 { margin: -15px -15px 10px -15px; font-size: 10pt; padding: 6px 10px; background-color: #eee; color: #000; border-radius: 0; font-weight: bold; border-bottom: 1px solid #ccc; }
-      /* PDF에서 제목 배경색 제거 (흑백 인쇄 고려) */
-      .question-box.vocab-question h4, .question-box.blank-question h4, .question-box.summary-box h4, .question-box.topic-box h4, .question-box.sentence-completion-question h4 { background-color: #eee; color: #000; }
-      .answer-section { background: #fff; border: 1px solid #eee; padding: 15px; }
-      .answer-section h3 { color: #000; border-bottom: 1px solid #ccc; }
-      .answer-section strong { color: #000; font-weight: bold; }
-      h1, h3, h4 { page-break-after: avoid; font-size: 12pt; }
-      p, ul, li { page-break-inside: avoid; font-size: 9.5pt; }
-      /* PDF 인쇄 시 컬럼 레이아웃 깨짐 방지 (필요시 활성화) */
-      /* .passage-section { display: block; } */
-      /* .passage-col { flex-basis: auto; width: 100%; } */
+      @page {
+        size: A4 landscape; /* PDF 가로 방향 설정 */
+        margin: 15mm; /* 여백 조정 */
+      }
+      body { font-size: 9pt; /* 가로 출력 시 폰트 약간 줄임 */ }
+      .passage-col { font-size: 9pt; }
+      .question-box { padding: 10px; }
+      .question-box h4 { margin: -10px -10px 8px -10px; font-size: 9.5pt; padding: 5px 8px; }
+      h1, h3, h4 { font-size: 11pt; }
+      p, ul, li { font-size: 9pt; }
+      /* 가로 출력 시 컬럼 레이아웃 유지 시도 */
+      .passage-section { display: flex !important; gap: 15px !important; }
+      .passage-col { flex: 1 !important; }
     }
-
   </style>
 </head>
 <body>
@@ -252,7 +113,6 @@
     <div class="nav-item" onclick="location.href='workbook.html'">워크북 제작</div>
     <div class="nav-item" onclick="location.href='compare.html'">원문 비교</div>
     <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
-
     <textarea id="passageInput" placeholder="여기에 분석할 지문을 붙여넣으세요..."></textarea>
     <button id="genTestBtn">분석지 생성</button>
     <button id="downloadPdfBtn" disabled>PDF 다운로드</button>
@@ -260,30 +120,109 @@
 
   <main class="main-content">
     <h2 id="mainTitle">본문 분석지 미리보기</h2>
-
     <div id="analysisResult">
       <p style="color: #7f8c8d; text-align: center; padding: 20px;">왼쪽 텍스트 영역에 지문을 붙여넣고 '분석지 생성' 버튼을 클릭하세요.</p>
     </div>
   </main>
 
   <script>
-    // JavaScript 로직 (이전 답변에서 수정한 버전과 동일)
     const passageInput = document.getElementById('passageInput');
     const genTestBtn = document.getElementById('genTestBtn');
     const downloadPdfBtn = document.getElementById('downloadPdfBtn');
     const analysisResultDiv = document.getElementById('analysisResult');
 
+    // 원문자 생성 함수
+    function getCircledNumber(n) {
+      if (n >= 1 && n <= 20) return String.fromCharCode(0x245F + n);
+      if (n >= 21 && n <= 35) return String.fromCharCode(0x3250 + (n - 20)); // ㉑ ~ ㉟ (별도 유니코드)
+      // 더 큰 숫자는 일반 숫자로 표시하거나 다른 방식 사용
+      return `(${n})`;
+    }
+
+    // --- 렌더링 함수 수정 ---
     function renderAnalysisSheet(data) {
-      if (!data || !data.passage || !data.questions || !data.analysis || !data.answerKey || !data.header) {
+      // 데이터 유효성 검사 강화
+      if (!data || !data.passage || typeof data.passage.english !== 'string' || typeof data.passage.korean !== 'string' || !data.passage.blankAnswers ||
+          !data.questions || !data.analysis || !data.analysis.summary || !Array.isArray(data.analysis.summary.points) || !Array.isArray(data.analysis.summary.blankKeywords) ||
+          !data.answerKey || !data.header) {
         console.error("렌더링 오류: API로부터 받은 데이터 구조가 올바르지 않습니다.", data);
         analysisResultDiv.innerHTML = `<p class="error-message">오류: 서버로부터 올바른 분석 데이터를 받지 못했습니다.</p>`;
         return;
       }
 
+      const isTeacherMode = document.getElementById('teacherModeToggle')?.checked || false; // 현재 모드 확인
+
+      // --- 1. 본문(영어) 처리 ---
+      let processedEnglishPassage = data.passage.english;
+
+      // 문장 나누고 번호 붙이기 (정규식 사용, .?! 뒤 공백 고려)
+      let sentenceCounter = 1;
+      processedEnglishPassage = processedEnglishPassage.replace(/([.?!])\s+(?=[A-Z"])/g, (match, p1) => {
+          const sentenceNumHtml = `<span class="sentence-number">${getCircledNumber(sentenceCounter)}</span> `;
+          sentenceCounter++;
+          return `${p1}\n${sentenceNumHtml}`; // 줄바꿈 후 번호 추가 (렌더링 시 줄바꿈은 <br>로 처리 필요)
+      });
+      // 첫 문장 번호 추가
+      processedEnglishPassage = `<span class="sentence-number">${getCircledNumber(1)}</span> ` + processedEnglishPassage;
+      // 렌더링을 위해 줄바꿈을 <br>로 변경
+      processedEnglishPassage = processedEnglishPassage.replace(/\n/g, '<br>');
+
+
+      // 어휘/어법 선택지 처리: [보기1/**정답**](번호) 또는 [**정답**/보기2](번호)
+      processedEnglishPassage = processedEnglishPassage.replace(/\[(.*?)\/\*\*(.*?)\*\*\]\((\d+)\)|\[\*\*(.*?)\*\*\/(.*?)\]\((\d+)\)/g,
+        (match, opt1, ans1, num1, ans2, opt2, num2) => {
+          const option = opt1 !== undefined ? opt1 : opt2;
+          const answer = ans1 !== undefined ? ans1 : ans2;
+          const num = num1 !== undefined ? num1 : num2;
+          if (isTeacherMode) {
+            // 강사용: 정답 볼드 표시
+            const display = ans1 !== undefined ? `[${option}/<strong>${answer}</strong>]` : `[<strong>${answer}</strong>/${option}]`;
+            return `<span class="choice">${display}</span><span class="highlight">(${num})</span>`;
+          } else {
+            // 학생용: 볼드 없이 표시
+            const display = `[${option}/${answer}]`;
+            return `<span class="choice">${display}</span><span class="highlight">(${num})</span>`;
+          }
+        });
+
+      // 본문 빈칸 처리: [[blank]](번호)
+      processedEnglishPassage = processedEnglishPassage.replace(/\[\[blank\]\]\((\d+)\)/g, (match, num) => {
+        const key = `(${num})`;
+        if (isTeacherMode && data.passage.blankAnswers && data.passage.blankAnswers[key]) {
+          // 강사용: 정답 표시 (볼드)
+          return `<span class="blank-underline has-answer"><strong>${data.passage.blankAnswers[key]}</strong></span><span class="highlight">(${num})</span>`;
+        } else {
+          // 학생용: 빈칸 표시
+          return `<span class="blank-underline">(${num})&nbsp;</span>`;
+        }
+      });
+
+
+      // --- 2. 내용 요약 처리 ---
+      const summaryPoints = data.analysis.summary.points;
+      const blankKeywords = data.analysis.summary.blankKeywords;
+      let summaryHtml = '';
+      if (Array.isArray(summaryPoints)) {
+        summaryHtml = summaryPoints.map(point => {
+          let pointHtml = point;
+          if (!isTeacherMode && Array.isArray(blankKeywords)) {
+            // 학생용: 키워드 빈칸 처리
+            blankKeywords.forEach(keyword => {
+              // 정규 표현식으로 단어 경계 고려하여 교체
+              const regex = new RegExp(`\\b${keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`, 'g');
+              pointHtml = pointHtml.replace(regex, '<span class="blank-underline">&nbsp;</span>');
+            });
+          }
+          return `<li class="summary-point">${pointHtml}</li>`; // 각 요약 항목을 li로 감쌈
+        }).join('');
+      }
+
+
+      // --- 3. HTML 구조 생성 및 내용 삽입 ---
       analysisResultDiv.innerHTML = `
         <div class="controls">
           <div>
-             <label><input type="checkbox" id="teacherModeToggle"> 강사용 보기 (정답/해석 등)</label>
+             <label><input type="checkbox" id="teacherModeToggle" ${isTeacherMode ? 'checked' : ''}> 강사용 보기 (정답/해석 등)</label>
           </div>
           <div>
              <label>제목: <input type="text" id="sheetTitle" value="${data.header.title || ''}"></label>
@@ -291,7 +230,7 @@
              <label>출처: <input type="text" id="sheetSource" size="15" value="${data.header.source || ''}"></label>
           </div>
         </div>
-        <div id="analysisSheet" class="analysis-sheet">
+        <div id="analysisSheet" class="analysis-sheet ${isTeacherMode ? 'teacher-mode' : ''}">
           <header class="sheet-header">
             <h1 id="renderTitle">${data.header.title || '분석지'}</h1>
             <div class="meta" id="renderMeta">${data.header.subject || ''} | ${data.header.source || ''} | ${data.header.unit || ''}</div>
@@ -299,108 +238,51 @@
           <section class="passage-section">
             <div class="passage-col english-passage">
               <h3>지문 분석</h3>
-              <p id="englishPassageContent"></p>
-            </div>
+              <p id="englishPassageContent">${processedEnglishPassage}</p> </div>
             <div class="passage-col korean-translation teacher-only">
               <h3>해석</h3>
-              <p id="koreanPassageContent"></p>
+              <p id="koreanPassageContent">${data.passage.korean}</p>
             </div>
           </section>
           <section class="question-section">
             <div class="question-box vocab-question">
-              <h4 id="vocabTitle"></h4>
-              <p id="vocabQuestionText"></p>
-              <ul id="vocabChoices"></ul>
+              <h4 id="vocabTitle">${data.questions.vocabulary?.title || '어휘 문제'}</h4>
+              <p id="vocabQuestionText">${data.questions.vocabulary?.questionText || ''}</p>
+              <ul id="vocabChoices">${Array.isArray(data.questions.vocabulary?.choices) ? data.questions.vocabulary.choices.map(c => `<li>${c}</li>`).join('') : ''}</ul>
             </div>
             <div class="question-box blank-question">
-              <h4 id="blankTitle"></h4>
-              <p id="blankQuestionText"></p>
-              <ul id="blankChoices"></ul>
+              <h4 id="blankTitle">${data.questions.blank?.title || '빈칸 문제'}</h4>
+              <p id="blankQuestionText">${data.questions.blank?.questionText || ''}</p>
+              <ul id="blankChoices">${Array.isArray(data.questions.blank?.choices) ? data.questions.blank.choices.map((c, i) => `<li>(${i+1}) ${c}</li>`).join('') : ''}</ul>
             </div>
             <div class="question-box sentence-completion-question" ${!(data.questions.sentenceCompletion && data.questions.sentenceCompletion.length > 0) ? 'style="display: none;"' : ''}>
-              <h4>문장 완성 (API 결과)</h4>
-              <div id="sentenceCompletionList"></div>
+              <h4>문장 완성</h4>
+              <div id="sentenceCompletionList">${(Array.isArray(data.questions.sentenceCompletion) && data.questions.sentenceCompletion.length > 0) ? data.questions.sentenceCompletion.map(item => `<p>${item.id}. ${item.question.replace(/\[빈칸\]/g, '<span class="blank-underline">&nbsp;</span>').replace(/\[(.*?)\]/g, '<strong>[$1]</strong>')}${item.note ? ` <small>(${item.note})</small>` : ''}</p>`).join('') : '<p><small>생성된 문장 완성 질문이 없습니다.</small></p>'}</div>
             </div>
-            <div class="question-box summary-box teacher-only">
-              <h4 id="summaryTitle"></h4>
-              <ul id="summaryPoints"></ul>
-            </div>
-            <div class="question-box topic-box teacher-only">
-              <h4 id="topicTitle"></h4>
-              <p id="topicText"></p>
+            <div class="question-box summary-box"> <h4 id="summaryTitle">${data.analysis.summary?.title || '내용정리'}</h4>
+              <ul id="summaryPoints">${summaryHtml}</ul> </div>
+            <div class="question-box topic-box teacher-only"> <h4 id="topicTitle">${data.analysis.topic?.title || '주제'}</h4>
+              <p id="topicText">${data.analysis.topic?.text || ''}</p>
             </div>
           </section>
           <section class="answer-section teacher-only">
-            <h3 id="answerKeyTitle"></h3>
-            <div id="answerKeyContent"></div>
+            <h3 id="answerKeyTitle">${data.answerKey?.title || '정답'}</h3>
+            <div id="answerKeyContent">
+              <p>어휘: <strong>${data.answerKey?.vocabAnswer || 'N/A'}</strong></p>
+              <p>빈칸: <strong>${data.answerKey?.blankAnswer || 'N/A'}</strong></p>
+            </div>
           </section>
         </div>
       `;
 
-      const engPassageEl = document.getElementById('englishPassageContent');
-      if (engPassageEl && data.passage.english) {
-         engPassageEl.innerHTML = data.passage.english.replace(/\[\[blank\]\]\((\d+)\)/g, '<span class="blank-underline">($1)&nbsp;</span>');
-      }
-      const korPassageEl = document.getElementById('koreanPassageContent');
-       if (korPassageEl && data.passage.korean) {
-           korPassageEl.textContent = data.passage.korean;
-       }
-
-      const vocabData = data.questions.vocabulary;
-      if (vocabData) {
-          document.getElementById('vocabTitle').textContent = vocabData.title || '어휘 문제';
-          document.getElementById('vocabQuestionText').textContent = vocabData.questionText || '';
-          document.getElementById('vocabChoices').innerHTML = Array.isArray(vocabData.choices) ? vocabData.choices.map(c => `<li>${c}</li>`).join('') : '';
-      }
-
-       const blankData = data.questions.blank;
-       if (blankData) {
-           document.getElementById('blankTitle').textContent = blankData.title || '빈칸 문제';
-           document.getElementById('blankQuestionText').textContent = blankData.questionText || '';
-           document.getElementById('blankChoices').innerHTML = Array.isArray(blankData.choices) ? blankData.choices.map((c, i) => `<li>(${i+1}) ${c}</li>`).join('') : '';
-       }
-
-      const sentenceListDiv = document.getElementById('sentenceCompletionList');
-      const sentenceData = data.questions.sentenceCompletion;
-      if (sentenceListDiv && Array.isArray(sentenceData) && sentenceData.length > 0) {
-        sentenceListDiv.innerHTML = sentenceData.map(item => {
-             const qHtml = item.question
-               .replace(/\[빈칸\]/g, '<span class="blank-underline">&nbsp;</span>')
-               .replace(/\[(.*?)\]/g, '<strong>[$1]</strong>');
-             return `<p>${item.id}. ${qHtml}${item.note ? ` <small>(${item.note})</small>` : ''}</p>`;
-        }).join('');
-      } else if(sentenceListDiv) {
-         sentenceListDiv.closest('.sentence-completion-question').style.display = 'none';
-      }
-
-       const summaryData = data.analysis.summary;
-       if (summaryData) {
-           document.getElementById('summaryTitle').textContent = summaryData.title || '내용정리';
-           document.getElementById('summaryPoints').innerHTML = Array.isArray(summaryData.points) ? summaryData.points.map(p => `<li>${p}</li>`).join('') : '';
-       }
-
-       const topicData = data.analysis.topic;
-       if (topicData) {
-           document.getElementById('topicTitle').textContent = topicData.title || '주제';
-           document.getElementById('topicText').textContent = topicData.text || '';
-       }
-
-      const answerData = data.answerKey;
-      if (answerData) {
-           document.getElementById('answerKeyTitle').textContent = answerData.title || '정답';
-           document.getElementById('answerKeyContent').innerHTML = `
-             <p>어휘: <strong>${answerData.vocabAnswer || 'N/A'}</strong></p>
-             <p>빈칸: <strong>${answerData.blankAnswer || 'N/A'}</strong></p>
-           `;
-      }
-
+      // --- 이벤트 리스너 재연결 ---
       const toggle = document.getElementById('teacherModeToggle');
       const sheet = document.getElementById('analysisSheet');
       if (toggle && sheet) {
          toggle.addEventListener('change', function() {
-           sheet.classList.toggle('teacher-mode', this.checked);
+           // 모드 변경 시 전체 재렌더링 (상태 반영 위해)
+           renderAnalysisSheet(data);
          });
-         sheet.classList.remove('teacher-mode');
       }
 
       const titleInput = document.getElementById('sheetTitle');
@@ -409,61 +291,47 @@
       const renderTitle = document.getElementById('renderTitle');
       const renderMeta = document.getElementById('renderMeta');
 
-       function updateRenderMeta() {
+       function updateRenderMeta() { /* ... (이전과 동일) ... */
            if (!renderMeta || !unitInput || !sourceInput) return;
            const subject = data.header.subject || '';
            const source = sourceInput.value;
            const unit = unitInput.value;
            renderMeta.textContent = `${subject} | ${source} | ${unit}`;
        }
-
-       if (titleInput && renderTitle) {
-           titleInput.addEventListener('input', e => { renderTitle.textContent = e.target.value; updateRenderMeta(); });
-       }
+       if (titleInput && renderTitle) titleInput.addEventListener('input', e => { renderTitle.textContent = e.target.value; updateRenderMeta(); });
        if (unitInput) unitInput.addEventListener('input', updateRenderMeta);
        if (sourceInput) sourceInput.addEventListener('input', updateRenderMeta);
 
       downloadPdfBtn.disabled = false;
     }
 
+    // --- '분석지 생성' 버튼 클릭 이벤트 핸들러 (API 호출 부분) ---
     genTestBtn.addEventListener('click', async () => {
       const text = passageInput.value.trim();
-      if (!text) {
-        alert('지문을 입력해 주세요.');
-        return;
-      }
+      if (!text) return alert('지문을 입력해 주세요.');
 
       analysisResultDiv.innerHTML = '<p class="loading-message">분석 중입니다... 잠시만 기다려 주세요.</p>';
       genTestBtn.disabled = true;
       downloadPdfBtn.disabled = true;
 
       try {
-        const res = await fetch('/api/sentence-test', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text })
+        const res = await fetch('/api/sentence-test', { /* ... (이전과 동일) ... */
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text })
         });
-
-        if (!res.ok) {
-          let errorBody = await res.text();
-          try {
-              const errorJson = JSON.parse(errorBody);
-              errorBody = errorJson.error || errorBody;
-          } catch (e) { /* Ignore parsing error */ }
-          throw new Error(`API 호출 실패 (${res.status}): ${errorBody}`);
+        if (!res.ok) { /* ... (이전 오류 처리와 동일) ... */
+          let errorBody = await res.text(); try { const errorJson = JSON.parse(errorBody); errorBody = errorJson.error || errorBody; } catch (e) {} throw new Error(`API 호출 실패 (${res.status}): ${errorBody}`);
         }
-
         const apiResult = await res.json();
+        // --- API 결과로 렌더링 함수 호출 ---
         renderAnalysisSheet(apiResult);
-
-      } catch (error) {
-        console.error('분석지 생성 오류:', error);
-        analysisResultDiv.innerHTML = `<p class="error-message">오류 발생: ${error.message}</p>`;
+      } catch (error) { /* ... (이전 오류 처리와 동일) ... */
+        console.error('분석지 생성 오류:', error); analysisResultDiv.innerHTML = `<p class="error-message">오류 발생: ${error.message}</p>`;
       } finally {
-        genTestBtn.disabled = false;
+        genTestBtn.disabled = false; // 버튼 항상 활성화
       }
     });
 
+    // --- PDF 다운로드 버튼 클릭 이벤트 핸들러 (가로 방향 수정) ---
     downloadPdfBtn.addEventListener('click', () => {
       const sheetElement = document.getElementById('analysisSheet');
       if (!sheetElement) return;
@@ -473,11 +341,15 @@
       const filename = `analysis_${unitValue}_${sourceValue}.pdf`;
 
       const options = {
-        margin: 15,
+        margin: 10, // 가로 출력이므로 여백 약간 줄임
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'landscape' // 가로 방향 설정!
+        }
       };
 
       const toggle = document.getElementById('teacherModeToggle');
@@ -485,16 +357,17 @@
       let wasChecked = false;
       if (toggle && sheet) {
            wasChecked = toggle.checked;
+           // PDF 생성 시에는 항상 강사 모드 기준으로 생성 (모든 내용 포함)
            sheet.classList.add('teacher-mode');
       }
 
       html2pdf().from(sheetElement).set(options).save().then(() => {
-         if (toggle && sheet && !wasChecked) {
+         if (toggle && sheet && !wasChecked) { // 원래 학생 모드였다면 되돌림
              sheet.classList.remove('teacher-mode');
          }
       }).catch(err => {
          console.error("PDF 생성 오류:", err);
-         if (toggle && sheet && !wasChecked) {
+         if (toggle && sheet && !wasChecked) { // 오류 시에도 되돌림
              sheet.classList.remove('teacher-mode');
          }
       });
