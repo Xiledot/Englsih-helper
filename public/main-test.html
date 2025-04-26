@@ -1,75 +1,62 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>본문 테스트지 제작</title>
-  <style>
-    body { display: flex; margin: 0; height: 100vh; font-family: Arial, sans-serif; background: #f4f7fa; }
-    .sidebar { width: 200px; background: #2D3B6A; color: #fff; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
-    .sidebar textarea, .sidebar button { margin-bottom: 12px; }
-    .sidebar input, .sidebar textarea { width: 100%; font-size: 1rem; padding: 8px; border-radius: 4px; border: none; }
-    .sidebar button { padding: 10px; font-size: 1rem; background: #E8652D; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
-    .main-content { flex: 1; padding: 20px; box-sizing: border-box; overflow-y: auto; }
-    .question-item { margin-bottom: 24px; }
-    .question-item p { font-size: 1rem; line-height: 1.4; }
-    .question-item br { margin-bottom: 4px; }
-    #downloadTest { display: none; background: #29a329; }
-  </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
-</head>
-<body>
-  <aside class="sidebar">
-    <h2 style="color:#fff; margin-bottom:16px;">지문 입력</h2>
-    <textarea id="passage" rows="10" placeholder="지문을 붙여넣으세요"></textarea>
-    <button id="genTest">테스트지 생성</button>
-    <button id="downloadTest">PDF 다운로드</button>
-  </aside>
-  <main class="main-content">
-    <h2>테스트지 미리보기</h2>
-    <div id="questions"></div>
-  </main>
-  <script>
-    document.getElementById('genTest').addEventListener('click', async () => {
-      const text = document.getElementById('passage').value.trim();
-      if (!text) return alert('지문을 입력하세요.');
-      try {
-        const res = await fetch('/api/sentence-test', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text })
-        });
-        if (!res.ok) throw new Error(await res.text());
-        const { items } = await res.json();
+<file name=server.js path=/Users/hanny/Desktop/test building>
+const express = require('express');
+const bodyParser = require('body-parser');
+const { Configuration, OpenAIApi } = require('openai');
 
-        const container = document.getElementById('questions');
-        container.innerHTML = '';
-        items.forEach(item => {
-          const div = document.createElement('div');
-          div.className = 'question-item';
-          // replace [빈칸] with underline span
-          const qHtml = item.question
-            .replace(/\[빈칸\]/g, '<span style="border-bottom:1px solid #000; display:inline-block; width:80px;"></span>')
-            .replace(/\[(.*?)\]/g, '<span style="font-weight:600;">[$1]</span>');
-          div.innerHTML = `<p>${item.id}. ${qHtml}</p>${item.note ? `<small>(${item.note})</small>` : ''}`;
-          container.appendChild(div);
-        });
+const app = express();
+app.use(bodyParser.json());
 
-        document.getElementById('downloadTest').style.display = '';
-      } catch (err) {
-        alert('오류: ' + err.message);
-      }
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
+
+app.post('/api/sentence-test', async (req, res) => {
+  const { text } = req.body;
+  if (!text) {
+    return res.status(400).json({ error: 'Text is required' });
+  }
+
+  try {
+    const completion = await openai.createChatCompletion({
+      model: 'gpt-4',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a helpful assistant that generates sentence test questions from a given passage.',
+        },
+        {
+          role: 'user',
+          content: `Please generate sentence test questions from the following passage in JSON format:
+${text}
+
+The JSON should be an array of items with fields: id, question, note (optional).`
+        },
+      ],
+      temperature: 0.7,
     });
 
-    document.getElementById('downloadTest').addEventListener('click', () => {
-      const element = document.getElementById('questions');
-      html2pdf().set({
-        margin: 10,
-        filename: 'sentence_test.pdf',
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4' }
-      }).from(element).save();
-    });
-  </script>
-</body>
-</html>
+    const raw = completion.choices[0].message.content;
+    // Remove any Markdown code fences (```…```)
+    const cleaned = raw.replace(/```[\s\S]*?```/g, '').trim();
+
+    let items;
+    try {
+      items = JSON.parse(cleaned);
+    } catch (parseErr) {
+      console.error('JSON parse error in sentence-test:', parseErr, 'Cleaned:', cleaned);
+      return res.status(500).json({ error: 'Failed to parse JSON from AI response' });
+    }
+
+    res.json({ items });
+  } catch (err) {
+    console.error('Error in sentence-test:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
+</file>
