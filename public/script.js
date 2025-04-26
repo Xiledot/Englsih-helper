@@ -1,10 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
   const BASE_API = 'https://abundang.onrender.com/api';
 
+  const inputCategory    = document.getElementById('input-category');
+  const inputSubcategory = document.getElementById('input-subcategory');
+  const inputTitle       = document.getElementById('input-title');
+  const inputWords       = document.getElementById('input-words');
+
   const saveBtn      = document.getElementById('save-wordlist-btn');
   const loadBtn      = document.getElementById('load-wordlists-btn');
   const multiTestBtn = document.getElementById('multi-test-btn');
-  const popSound     = new Audio('/audio/pop.mp3');
+
+  const popSound = new Audio('/audio/pop.mp3');
   popSound.preload = 'auto';
 
   function shuffle(arr) {
@@ -21,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return res.json();
   }
 
-  // 저장 버튼
+  // ───────── 저장 버튼 ─────────
   saveBtn.addEventListener('click', async () => {
     const cat   = inputCategory.value.trim();
     const sub   = inputSubcategory.value.trim();
@@ -29,8 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const words = inputWords.value.trim().split('\n').map(l => {
       const idxKor = l.search(/[가-힣]/);
       return {
-        word: idxKor !== -1 ? l.substring(0, idxKor).trim() : l.trim(),
-        meaning: idxKor !== -1 ? l.substring(idxKor).trim() : ''
+        word:    idxKor !== -1 ? l.substring(0, idxKor).trim() : l.trim(),
+        meaning: idxKor !== -1 ? l.substring(idxKor).trim()    : ''
       };
     });
 
@@ -55,23 +61,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 목록 렌더링
+  // ───────── 단어장 트리 렌더링 ─────────
   async function renderTree() {
     try {
       const items = await fetchJSON(`${BASE_API}/list-wordlists`);
       const root = document.getElementById('wordlist-tree');
       root.innerHTML = '';
+
       const byCat = items.reduce((acc, { category, subcategory, title }) => {
-        acc[category]       ||= {};
+        acc[category] ||= {};
         acc[category][subcategory] ||= [];
         acc[category][subcategory].push(title);
         return acc;
       }, {});
+
       for (const [cat, submap] of Object.entries(byCat)) {
         const d1 = document.createElement('details');
         const s1 = document.createElement('summary');
         s1.textContent = cat;
         d1.appendChild(s1);
+
         for (const [sub, list] of Object.entries(submap)) {
           const d2 = document.createElement('details');
           d2.style.marginLeft = '12px';
@@ -104,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   loadBtn.addEventListener('click', renderTree);
 
-  // 통합 테스트 시작
+  // ───────── 통합 테스트 시작 ─────────
   multiTestBtn.addEventListener('click', async () => {
     const checkedEls = Array.from(
       document.querySelectorAll('.wordlist-checkbox:checked')
@@ -114,11 +123,9 @@ document.addEventListener('DOMContentLoaded', () => {
       `선택된 [${checkedEls.map(el => el.value).join(', ')}] 단어 테스트를 시작할까요?`
     )) return;
 
-    // 선택된 대/중분류만 추출
-    const categories   = [...new Set(checkedEls.map(el => el.dataset.category))];
+    const categories    = [...new Set(checkedEls.map(el => el.dataset.category))];
     const subcategories = [...new Set(checkedEls.map(el => el.dataset.subcategory))];
 
-    // 단어 가져와서 metadata까지 붙이기
     const allWords = [];
     for (const el of checkedEls) {
       const title = el.value;
@@ -136,11 +143,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // localStorage에 저장
     localStorage.setItem('popupData', JSON.stringify(allWords, null, 2));
     localStorage.setItem('popupMeta', JSON.stringify({ categories, subcategories }));
 
-    // 팝업(새 탭) 열기
     openMultiTestPopup();
   });
 
