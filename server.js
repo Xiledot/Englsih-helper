@@ -7,6 +7,17 @@ const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require("@googl
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const app = express();
+
+// ----- 외부 라우트 모듈 연결 -----
+const listWordlistsRouter = require('./routes/list-wordlists');
+const saveWordlistRouter  = require('./routes/save-wordlist');
+// (optional) 복수 저장 라우트가 있다면 주석을 해제하세요.
+// const saveWordlistsRouter = require('./routes/save-wordlists');
+
+app.use('/api', listWordlistsRouter);
+app.use('/api', saveWordlistRouter);
+// app.use('/api', saveWordlistsRouter); // (optional)
+
 app.use(bodyParser.json());
 
 // ---------- OpenAI 기반 /api/main-test ----------
@@ -79,40 +90,6 @@ app.post('/api/sentence-test', async (req, res) => {
   } catch (err) {
     console.error('/api/sentence-test error:', err);
     return res.status(500).json({ error: err.message || 'Gemini API 오류' });
-  }
-});
-
-// ---------- 단어장 API ----------
-app.get('/api/list-wordlists', async (_req, res) => {
-  try {
-    // TODO: 실제 데이터 소스로 교체
-    const wordlists = [];
-    return res.json(wordlists);
-  } catch (err) {
-    console.error('/api/list-wordlists error:', err);
-    return res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/save-wordlists', async (req, res) => {
-  try {
-    console.log('/api/save-wordlists payload:', req.body);
-    // TODO: 저장 로직 구현
-    return res.json({ success: true, message: '단어장 저장 완료 (복수형)' });
-  } catch (err) {
-    console.error('/api/save-wordlists error:', err);
-    return res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/save-wordlist', async (req, res) => {
-  try {
-    console.log('/api/save-wordlist payload:', req.body);
-    // TODO: 저장 로직 구현
-    return res.json({ success: true, message: '단어장 저장 완료 (단수형)' });
-  } catch (err) {
-    console.error('/api/save-wordlist error:', err);
-    return res.status(500).json({ error: err.message });
   }
 });
 
