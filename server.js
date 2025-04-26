@@ -67,7 +67,16 @@ app.post('/api/sentence-test', async (req, res) => {
         },
         {
           role: 'user',
-          content: `Generate 10 sentence completion questions from the following passage. Each question should include blanks marked as [빈칸] with two choices like (A) option1 / (B) option2, and optionally a brief note in parentheses.\n\nPassage:\n${text}`
+          content: `Generate exactly 10 sentence-completion questions from the passage below. Respond with *only* a JSON array of objects, with no extra text before or after. The array must be formatted exactly like this:
+
+[
+  { "id": 1, "question": "...", "note": "optional note" },
+  { "id": 2, "question": "...", "note": "optional note" },
+  ...
+]
+
+Passage:
+${text}`
         }
       ],
       max_tokens: 1500,
